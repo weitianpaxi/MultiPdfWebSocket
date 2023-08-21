@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Xml;
-using static MultiPdfWebSocket.Utility.Parameter;
+using static MultiPdfWebSocket.Utility.LogParameter;
 
 namespace MultiPdfWebSocket.Utility
 {
@@ -18,9 +18,9 @@ namespace MultiPdfWebSocket.Utility
                 XmlDocument doc = new XmlDocument();
                 doc.Load(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "XML", "Config.xml"));
                 var node = doc.SelectSingleNode("appSettings");
-                Parameter.LogLevel = (LogLevelEnum)Enum.Parse(typeof(LogLevelEnum), node.SelectSingleNode("LogLevel").InnerText);
-                Parameter.LogFilePath = node.SelectSingleNode("LogFilePath").InnerText;
-                Parameter.LogFileExistDay = int.Parse(node.SelectSingleNode("LogFileExistDay").InnerText);
+                LogParameter.LogLevel = (LogLevelEnum)Enum.Parse(typeof(LogLevelEnum), node.SelectSingleNode("LogLevel").InnerText);
+                LogParameter.LogFilePath = node.SelectSingleNode("LogFilePath").InnerText;
+                LogParameter.LogFileExistDay = int.Parse(node.SelectSingleNode("LogFileExistDay").InnerText);
 
                 LogHelper.Debug("XML文件读取成功。");
             }

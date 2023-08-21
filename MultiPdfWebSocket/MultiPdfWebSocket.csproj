@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\InterfaceMethodConstant.cs" />
     <Compile Include="Common\MessageConstant.cs" />
     <Compile Include="Common\OperationalStateConstant.cs" />
     <Compile Include="Common\ProfileConstant.cs" />
@@ -73,7 +74,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utility\LogHelper.cs" />
-    <Compile Include="Utility\Parameter.cs" />
+    <Compile Include="Utility\LogParameter.cs" />
     <Compile Include="Common\Response.cs" />
     <Compile Include="Common\Result.cs" />
     <Compile Include="Utility\XMLHelper.cs" />

@@ -7,18 +7,18 @@ using System.Threading.Tasks;
 namespace MultiPdfWebSocket.Common
 {
     /// <summary>
-    /// 操作状态常量定义
+    /// 接口方法常量定义
     /// </summary>
-    class OperationalStateConstant
+    class InterfaceMethodConstant
     {
         /// <summary>
-        /// 操作执行成功状态码
+        /// 显示Pdf插件
         /// </summary>
-        public const int OPERATION_SUCCESSFUL = 0;
+        public const string SHOW_PDF_SERVICE = "ShowPdfService";
 
         /// <summary>
-        /// 操作执行失败状态码
+        /// 隐藏Pdf插件
         /// </summary>
-        public const int OPERATION_FAILED = -1;
+        public const string CLOSE_PDF_SERVICE = "ClosePdfService";
     }
 }

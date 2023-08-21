@@ -53,7 +53,7 @@ namespace MultiPdfWebSocket
             //日志清除
             Task.Factory.StartNew(() =>
             {
-                DirectoryInfo di = new DirectoryInfo(Parameter.LogFilePath);
+                DirectoryInfo di = new DirectoryInfo(LogParameter.LogFilePath);
                 if (!di.Exists)
                     di.Create();
                 FileInfo[] fi = di.GetFiles("Demo_*.log");
@@ -61,7 +61,7 @@ namespace MultiPdfWebSocket
                 foreach (FileInfo info in fi)
                 {
                     TimeSpan ts = dateTime.Subtract(info.LastWriteTime);
-                    if (ts.TotalDays > Parameter.LogFileExistDay)
+                    if (ts.TotalDays > LogParameter.LogFileExistDay)
                     {
                         info.Delete();
                         LogHelper.Debug(string.Format("已删除日志。{0}", info.Name));
@@ -174,143 +174,87 @@ namespace MultiPdfWebSocket
         private async Task ProcessMessage(byte[] buffer, int length)
         {
             string responseMessage = "";            // 定义返回消息
-            int ret;                                // 定义操作状态
+            //int ret;                                // 定义操作状态
             // 处理接收到的消息
             this.TopMost = true;                    // 窗口置顶显示   
             string resultMessage = System.Text.Encoding.UTF8.GetString(buffer, 0, length);                      // 转换接受到的数据编码格式 
 
             var json_resultMessage = JsonConvert.DeserializeObject<JObject>(resultMessage);                     // json数据序列化
-            /*if (data["method"].ToString().Equals("SNCAOpenPdf"))
+            if (json_resultMessage["Method"].ToString().Equals(InterfaceMethodConstant.SHOW_PDF_SERVICE))
             {
-                Console.WriteLine("现在执行的方法是：" + data["method"].ToString());
-                this.TopMost = false;
-                ret = this.axPDFView1.SNCAOpenPdf();
-                //this.WindowState = FormWindowState.Normal;
-                
-                responseMessage = ret.ToString();
+                responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.SHOW_PDF_SERVICE, Result.Success(ShowPdfService(json_resultMessage))));
             }
-            else if (data["method"].ToString().Equals("GetPageCounts"))
+            if (json_resultMessage["Method"].ToString().Equals(InterfaceMethodConstant.CLOSE_PDF_SERVICE))
             {
-                Console.WriteLine("现在执行的方法是：" + data["method"].ToString());
-                this.TopMost = false;
-                ret = this.axPDFView1.GetPageCounts();  // 此时获取到的是pdf文件的总页数
-                responseMessage = ret.ToString();
+                responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.SHOW_PDF_SERVICE, Result.Success(ClosePdfService())));
             }
-            else if (data["method"].ToString().Equals("First"))
+            if (json_resultMessage["Method"].ToString().Equals("NormalPdfReader"))
             {
-                Console.WriteLine("现在执行的方法是：" + data["method"].ToString());
-                this.TopMost = false;
-                this.axPDFView1.First();
-                responseMessage = "已跳转到文件首页!";
-            }
-            else if (data["method"].ToString().Equals("Prev"))
-            {
-                Console.WriteLine("现在执行的方法是：" + data["method"].ToString());
-                this.TopMost = false;
-                int tempPageNum = this.axPDFView1.GetCurPageNo();
-                if (tempPageNum > 1)
-                {
-                    this.axPDFView1.Prev();
-                    responseMessage = "跳转上一页成功！";
-                }
-                else
-                {
-                    responseMessage = "已是文档第一页！";
-                }
-            }
-            else if (data["method"].ToString().Equals("Next"))
-            {
-                Console.WriteLine("现在执行的方法是：" + data["method"].ToString());
-                this.TopMost = false;
-                int tempPageNum = this.axPDFView1.GetCurPageNo();
-                if (tempPageNum < this.axPDFView1.GetPageCounts())
-                {
-                    this.axPDFView1.Next();
-                    responseMessage = "跳转下一页成功！";
-                }
-                else
-                {
-                    responseMessage = "已到文档最后一页！";
-                }
-            }
-            else if (data["method"].ToString().Equals("Last"))
-            {
-                Console.WriteLine("现在执行的方法是：" + data["method"].ToString());
-                this.TopMost = false;
-                this.axPDFView1.Last();
-                responseMessage = "已跳转到文件尾页!";
-            }
-            else if (data["method"].ToString().Equals("TZGoToPage"))
-            {
-                Console.WriteLine("现在执行的方法是：" + data["method"].ToString());
-                int pageNummber = (int)data["pageNum"];
-                this.TopMost = false;
-                ret = this.axPDFView1.TZGoToPage(pageNummber);
-                if (ret == 0)
-                {
-                    responseMessage = "跳转打开成功！";
-                }
-                else
-                {
-                    responseMessage = "跳转打开失败，请先打开文件！";
-                }
-            }
-            else if (data["method"].ToString().Equals("Stamp"))
-            {
-                Console.WriteLine("现在执行的方法是：" + data["method"].ToString());
-                int type = (int)data["type"];
-                this.WindowState = FormWindowState.Normal;
-                ret = this.axPDFView1.Stamp(type);
-                if (ret == -1)
-                {
-                    this.TopMost = false;
-                    responseMessage = "签章失败，请打开文件后重试！";
-                }
-                else if (ret == 0)
-                {
-                    this.TopMost = false;
-                    responseMessage = "签章成功，请打开文件查看详情！";
-                }
-            }
-            else if (data["method"].ToString().Equals("TZSignByPos3"))
-            {
-                Console.WriteLine("现在执行的方法是：" + data["method"].ToString());
-                String pageNummber = data["pageNum"].ToString();
-                int posX = (int)data["posX"];
-                int posY = (int)data["posY"];
-                this.TopMost = false;
-                ret = this.axPDFView1.TZSignByPos3(pageNummber, posX, posY);
-                if (ret == -1)
-                {
-                    responseMessage = "签章失败，请打开文件后重试！";
-                }
-                else if (ret == 0)
-                {
-                    responseMessage = "签章成功，请打开文件查看详情！";
-                }
-            }
-            else if (data["method"].ToString().Equals("CloseFile"))
-            {
-                Console.WriteLine("现在执行的方法是：" + data["method"].ToString());
-                this.axPDFView1.CloseFile();
-                this.TopMost = false;
-                responseMessage = "文件已关闭";
-            }
-            else if (data["method"].ToString().Equals("NormalPdfReader"))
-            {
-                Console.WriteLine("现在执行的方法是：" + data["method"].ToString());
+                Console.WriteLine("现在执行的方法是：" + json_resultMessage["method"].ToString());
                 // 显示窗口
                 this.WindowState = FormWindowState.Normal;
             }
-            else if (data["method"].ToString().Equals("MinimizedPdfReader"))
+            else if (json_resultMessage["Method"].ToString().Equals("MinimizedPdfReader"))
             {
-                Console.WriteLine("现在执行的方法是：" + data["method"].ToString());
+                Console.WriteLine("现在执行的方法是：" + json_resultMessage["method"].ToString());
                 // 最小化窗口
                 this.WindowState = FormWindowState.Minimized;
-            }*/
+            }
+
+            // 发送回执消息
             byte[] responseBytes = Encoding.UTF8.GetBytes(responseMessage);
             await websocket.SendAsync(new ArraySegment<byte>(responseBytes), WebSocketMessageType.Text, true, CancellationToken.None);
-
         }
+
+        /// <summary>
+        /// 显示Pdf插件
+        /// </summary>
+        /// <param name="Parameter"></param>
+        /// <returns></returns>
+        public string ShowPdfService(JObject Parameter)
+        {
+            if (Parameter["Parameter"]["TopMost"].ToString().Equals("1"))
+            {
+                this.TopMost = true;
+            }
+            else
+            {
+                this.TopMost = false;
+            }
+            if (Parameter["Parameter"].ToList().Count > 1)
+            {
+                int posX = 0, posY = 0, width = 1200, height = 650;
+                if (Parameter["Parameter"]["posX"] != null)
+                    int.TryParse(Parameter["Parameter"]["posX"].ToString(), out posX);
+                if (Parameter["Parameter"]["posY"] != null)
+                    int.TryParse(Parameter["Parameter"]["posY"].ToString(), out posY);
+                if (Parameter["Parameter"]["width"] != null)
+                    int.TryParse(Parameter["Parameter"]["width"].ToString(), out width);
+                if (Parameter["Parameter"]["height"] != null)
+                    int.TryParse(Parameter["Parameter"]["height"].ToString(), out height);
+                this.WindowState = FormWindowState.Normal;
+                this.Location = new Point(posX, posY);                      // 设置窗口的位置
+                this.Size = new Size(width, height);                        // 设置窗口的大小
+                this.axPDFView1.Location = new Point(0, 0);                 // 位置更新后设置控件相对位置
+                this.axPDFView1.Size = new Size(width, height - 30);        // 保证控件随外框大小变化
+            }
+            else
+            {
+                this.WindowState = FormWindowState.Normal;
+            }
+            return MessageConstant.SHOWPDFSERVICE_SUCCESSFUL;
+        }
+
+        /// <summary>
+        /// 隐藏Pdf插件
+        /// </summary>
+        /// <returns></returns>
+        public string ClosePdfService()
+        {
+            this.WindowState = FormWindowState.Minimized;
+            return MessageConstant.CLOSEPDFSERVICE_SUCCESSFUL;
+        }
+
+
     }
 }

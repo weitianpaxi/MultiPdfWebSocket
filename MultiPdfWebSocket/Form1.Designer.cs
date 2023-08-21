@@ -40,14 +40,14 @@ namespace MultiPdfWebSocket
             this.axPDFView1.Location = new System.Drawing.Point(0, 1);
             this.axPDFView1.Name = "axPDFView1";
             this.axPDFView1.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("axPDFView1.OcxState")));
-            this.axPDFView1.Size = new System.Drawing.Size(1288, 712);
+            this.axPDFView1.Size = new System.Drawing.Size(1174, 712);
             this.axPDFView1.TabIndex = 0;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1284, 711);
+            this.ClientSize = new System.Drawing.Size(1184, 711);
             this.ControlBox = false;
             this.Controls.Add(this.axPDFView1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;

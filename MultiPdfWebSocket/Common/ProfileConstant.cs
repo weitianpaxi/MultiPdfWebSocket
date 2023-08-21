@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace MultiPdfWebSocket.Common
 {
+    /// <summary>
+    /// 配置类常量定义
+    /// </summary>
     class ProfileConstant
     {
         /// <summary>

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
-using static MultiPdfWebSocket.Utility.Parameter;
+using static MultiPdfWebSocket.Utility.LogParameter;
 
 namespace MultiPdfWebSocket.Utility
 {
@@ -14,7 +14,7 @@ namespace MultiPdfWebSocket.Utility
 
         public static void Debug(object messsage)
         {
-            if ((int)Parameter.LogLevel <= (int)LogLevelEnum.Debug)
+            if ((int)LogParameter.LogLevel <= (int)LogLevelEnum.Debug)
             {
                 log.Debug(messsage);
             }
@@ -22,7 +22,7 @@ namespace MultiPdfWebSocket.Utility
 
         public static void DebugFormatted(string format, params object[] args)
         {
-            if ((int)Parameter.LogLevel <= (int)LogLevelEnum.Debug)
+            if ((int)LogParameter.LogLevel <= (int)LogLevelEnum.Debug)
             {
                 log.DebugFormat(format, args);
             }
@@ -30,7 +30,7 @@ namespace MultiPdfWebSocket.Utility
 
         public static void Info(object message)
         {
-            if ((int)Parameter.LogLevel <= (int)LogLevelEnum.Info)
+            if ((int)LogParameter.LogLevel <= (int)LogLevelEnum.Info)
             {
                 log.Info(message);
             }
@@ -38,7 +38,7 @@ namespace MultiPdfWebSocket.Utility
 
         public static void InfoFormatted(string format, params object[] args)
         {
-            if ((int)Parameter.LogLevel <= (int)LogLevelEnum.Info)
+            if ((int)LogParameter.LogLevel <= (int)LogLevelEnum.Info)
             {
                 log.InfoFormat(format, args);
             }
@@ -46,7 +46,7 @@ namespace MultiPdfWebSocket.Utility
 
         public static void Warn(object message)
         {
-            if ((int)Parameter.LogLevel <= (int)LogLevelEnum.Warn)
+            if ((int)LogParameter.LogLevel <= (int)LogLevelEnum.Warn)
             {
                 log.Warn(message);
             }
@@ -54,7 +54,7 @@ namespace MultiPdfWebSocket.Utility
 
         public static void WarnFormatted(string format, params object[] args)
         {
-            if ((int)Parameter.LogLevel <= (int)LogLevelEnum.Warn)
+            if ((int)LogParameter.LogLevel <= (int)LogLevelEnum.Warn)
             {
                 log.WarnFormat(format, args);
             }
@@ -62,7 +62,7 @@ namespace MultiPdfWebSocket.Utility
 
         public static void Error(object message)
         {
-            if ((int)Parameter.LogLevel <= (int)LogLevelEnum.Error)
+            if ((int)LogParameter.LogLevel <= (int)LogLevelEnum.Error)
             {
                 log.Error(message);
             }
@@ -70,7 +70,7 @@ namespace MultiPdfWebSocket.Utility
 
         public static void Error(object message, Exception exception)
         {
-            if ((int)Parameter.LogLevel <= (int)LogLevelEnum.Error)
+            if ((int)LogParameter.LogLevel <= (int)LogLevelEnum.Error)
             {
                 log.Error(message, exception);
             }
@@ -78,7 +78,7 @@ namespace MultiPdfWebSocket.Utility
 
         public static void ErrorFormatted(string format, params object[] args)
         {
-            if ((int)Parameter.LogLevel <= (int)LogLevelEnum.Error)
+            if ((int)LogParameter.LogLevel <= (int)LogLevelEnum.Error)
             {
                 log.ErrorFormat(format, args);
             }
@@ -86,7 +86,7 @@ namespace MultiPdfWebSocket.Utility
 
         public static void Fatal(object message)
         {
-            if ((int)Parameter.LogLevel <= (int)LogLevelEnum.Fatal)
+            if ((int)LogParameter.LogLevel <= (int)LogLevelEnum.Fatal)
             {
                 log.Fatal(message);
             }
@@ -94,7 +94,7 @@ namespace MultiPdfWebSocket.Utility
 
         public static void Fatal(object message, Exception exception)
         {
-            if ((int)Parameter.LogLevel <= (int)LogLevelEnum.Fatal)
+            if ((int)LogParameter.LogLevel <= (int)LogLevelEnum.Fatal)
             {
                 log.Fatal(message, exception);
             }
@@ -102,7 +102,7 @@ namespace MultiPdfWebSocket.Utility
 
         public static void FatalFormatted(string format, params object[] args)
         {
-            if ((int)Parameter.LogLevel <= (int)LogLevelEnum.Fatal)
+            if ((int)LogParameter.LogLevel <= (int)LogLevelEnum.Fatal)
             {
                 log.FatalFormat(format, args);
             }

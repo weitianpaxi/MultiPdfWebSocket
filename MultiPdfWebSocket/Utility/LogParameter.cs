@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MultiPdfWebSocket.Utility
 {
-    public class Parameter
+    public class LogParameter
     {
         /// <summary>
         /// 日志等级

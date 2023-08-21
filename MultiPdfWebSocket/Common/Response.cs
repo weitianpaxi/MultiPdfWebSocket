@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace MultiPdfWebSocket.Common
 {
+    /// <summary>
+    /// 响应消息定义
+    /// </summary>
     class Response
     {
         /// <summary>

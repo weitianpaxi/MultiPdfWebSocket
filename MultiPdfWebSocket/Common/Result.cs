@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace MultiPdfWebSocket.Common
 {
+    /// <summary>
+    /// 操作结果返回消息定义，统一数据格式定义
+    /// </summary>
     class Result
     {
         /// <summary>
@@ -33,5 +36,34 @@ namespace MultiPdfWebSocket.Common
             this.data = data;
         }
 
+        /// <summary>
+        /// 一些默认无返回值的操作成功的提醒
+        /// </summary>
+        /// <param name="message">提醒消息</param>
+        /// <returns></returns>
+        public static Result Success(string message)
+        {
+            Result result = new Result
+            {
+                code = 0,
+                data = message
+            };
+            return result;
+        }
+
+        /// <summary>
+        /// 一些默认无返回值的操作失败的提醒
+        /// </summary>
+        /// <param name="message">提醒消息</param>
+        /// <returns></returns>
+        public static Result Error(string message)
+        {
+            Result result = new Result
+            {
+                code = 1,
+                data = message
+            };
+            return result;
+        }
     }
 }
