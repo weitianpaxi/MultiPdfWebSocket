@@ -64,10 +64,10 @@ namespace MultiPdfWebSocket
                     if (ts.TotalDays > LogParameter.LogFileExistDay)
                     {
                         info.Delete();
-                        LogHelper.Debug(string.Format("已删除日志。{0}", info.Name));
+                        LogHelper.Debug(string.Format("Deleted log. {0}", info.Name));
                     }
                 }
-                LogHelper.Debug("日志清理完毕。");
+                LogHelper.Debug("Log cleaning completed.");
             });
         }
 
@@ -78,7 +78,7 @@ namespace MultiPdfWebSocket
         /// <param name="e"></param>
         private void  AxPDFView1_AfterSignPDF(object sender, EventArgs e)
         {
-            LogHelper.log.Info(userIpAddress + " => 执行了签章操作");
+            LogHelper.log.Info(userIpAddress + " => Executed signature operation");
             string message = JsonConvert.SerializeObject(new Response("Event_AfterSignPDF", new Result(MessageConstant.USER_SELF_SIGN)));
             byte[] responseBytes = Encoding.UTF8.GetBytes(message);
             websocket.SendAsync(new ArraySegment<byte>(responseBytes), WebSocketMessageType.Text, true, CancellationToken.None);
@@ -177,28 +177,16 @@ namespace MultiPdfWebSocket
             //int ret;                                // 定义操作状态
             // 处理接收到的消息
             this.TopMost = true;                    // 窗口置顶显示   
-            string resultMessage = System.Text.Encoding.UTF8.GetString(buffer, 0, length);                      // 转换接受到的数据编码格式 
+            string resultMessage = Encoding.UTF8.GetString(buffer, 0, length);                      // 转换接受到的数据编码格式 
 
-            var json_resultMessage = JsonConvert.DeserializeObject<JObject>(resultMessage);                     // json数据序列化
-            if (json_resultMessage["Method"].ToString().Equals(InterfaceMethodConstant.SHOW_PDF_SERVICE))
+            var json_resultMessage = JsonConvert.DeserializeObject<JObject>(resultMessage);         // json数据序列化
+            if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.SHOW_PDF_SERVICE))
             {
                 responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.SHOW_PDF_SERVICE, Result.Success(ShowPdfService(json_resultMessage))));
             }
-            if (json_resultMessage["Method"].ToString().Equals(InterfaceMethodConstant.CLOSE_PDF_SERVICE))
+            if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.CLOSE_PDF_SERVICE))
             {
                 responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.SHOW_PDF_SERVICE, Result.Success(ClosePdfService())));
-            }
-            if (json_resultMessage["Method"].ToString().Equals("NormalPdfReader"))
-            {
-                Console.WriteLine("现在执行的方法是：" + json_resultMessage["method"].ToString());
-                // 显示窗口
-                this.WindowState = FormWindowState.Normal;
-            }
-            else if (json_resultMessage["Method"].ToString().Equals("MinimizedPdfReader"))
-            {
-                Console.WriteLine("现在执行的方法是：" + json_resultMessage["method"].ToString());
-                // 最小化窗口
-                this.WindowState = FormWindowState.Minimized;
             }
 
             // 发送回执消息
@@ -213,7 +201,7 @@ namespace MultiPdfWebSocket
         /// <returns></returns>
         public string ShowPdfService(JObject Parameter)
         {
-            if (Parameter["Parameter"]["TopMost"].ToString().Equals("1"))
+            if ((bool)Parameter[ProfileConstant.METHOD]["TopMost"])
             {
                 this.TopMost = true;
             }
@@ -221,17 +209,17 @@ namespace MultiPdfWebSocket
             {
                 this.TopMost = false;
             }
-            if (Parameter["Parameter"].ToList().Count > 1)
+            if (Parameter[ProfileConstant.PARAMETER].ToList().Count > 1)
             {
                 int posX = 0, posY = 0, width = 1200, height = 650;
-                if (Parameter["Parameter"]["posX"] != null)
-                    int.TryParse(Parameter["Parameter"]["posX"].ToString(), out posX);
-                if (Parameter["Parameter"]["posY"] != null)
-                    int.TryParse(Parameter["Parameter"]["posY"].ToString(), out posY);
-                if (Parameter["Parameter"]["width"] != null)
-                    int.TryParse(Parameter["Parameter"]["width"].ToString(), out width);
-                if (Parameter["Parameter"]["height"] != null)
-                    int.TryParse(Parameter["Parameter"]["height"].ToString(), out height);
+                if (Parameter[ProfileConstant.PARAMETER]["posX"] != null)
+                    int.TryParse(Parameter[ProfileConstant.PARAMETER]["posX"].ToString(), out posX);
+                if (Parameter[ProfileConstant.PARAMETER]["posY"] != null)
+                    int.TryParse(Parameter[ProfileConstant.PARAMETER]["posY"].ToString(), out posY);
+                if (Parameter[ProfileConstant.PARAMETER]["width"] != null)
+                    int.TryParse(Parameter[ProfileConstant.PARAMETER]["width"].ToString(), out width);
+                if (Parameter[ProfileConstant.PARAMETER]["height"] != null)
+                    int.TryParse(Parameter[ProfileConstant.PARAMETER]["height"].ToString(), out height);
                 this.WindowState = FormWindowState.Normal;
                 this.Location = new Point(posX, posY);                      // 设置窗口的位置
                 this.Size = new Size(width, height);                        // 设置窗口的大小
@@ -241,6 +229,7 @@ namespace MultiPdfWebSocket
             else
             {
                 this.WindowState = FormWindowState.Normal;
+                this.StartPosition = FormStartPosition.CenterScreen;        // 窗口显示在屏幕中央
             }
             return MessageConstant.SHOWPDFSERVICE_SUCCESSFUL;
         }
@@ -255,6 +244,16 @@ namespace MultiPdfWebSocket
             return MessageConstant.CLOSEPDFSERVICE_SUCCESSFUL;
         }
 
-
+        public string EnableToolBarButton(JObject Parameter)
+        {
+            if ((bool)Parameter[ProfileConstant.PARAMETER]["IsEnable"])
+            {
+                return MessageConstant.TOOLBAR_BUTTON_DISPLAY_SUCCESSFUL;
+            }
+            else
+            {
+                return MessageConstant.TOOLBAR_BUTTON_HIDDEN_SUCCESSFUL;
+            }
+        }
     }
 }

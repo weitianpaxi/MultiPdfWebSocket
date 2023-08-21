@@ -25,6 +25,19 @@ namespace MultiPdfWebSocket.Common
         /// </summary>
         public const string SHOWPDFSERVICE_SUCCESSFUL = "PDF服务端展示成功";
 
+        /// <summary>
+        /// 隐藏PDF服务端成功
+        /// </summary>
         public const string CLOSEPDFSERVICE_SUCCESSFUL = "PDF服务端隐藏成功";
+
+        /// <summary>
+        /// 工具栏按钮隐藏成功
+        /// </summary>
+        public const string TOOLBAR_BUTTON_HIDDEN_SUCCESSFUL = "工具栏按钮隐藏成功";
+
+        /// <summary>
+        /// 工具栏按钮显示成功
+        /// </summary>
+        public const string TOOLBAR_BUTTON_DISPLAY_SUCCESSFUL = "工具栏按钮显示成功";
     }
 }

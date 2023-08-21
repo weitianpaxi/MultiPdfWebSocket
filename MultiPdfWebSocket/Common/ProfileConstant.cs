@@ -30,5 +30,15 @@ namespace MultiPdfWebSocket.Common
         /// 设置签章厂商，0为陕西ca，110为北京ca
         /// </summary>
         public const int CA_TYPE = 0;
+
+        /// <summary>
+        /// 客户端请求JSON中执行方法key值
+        /// </summary>
+        public const string METHOD = "Method";
+
+        /// <summary>
+        /// 客户端请求JSON中执行方法所需参数key值
+        /// </summary>
+        public const string PARAMETER = "Parameter";
     }
 }
