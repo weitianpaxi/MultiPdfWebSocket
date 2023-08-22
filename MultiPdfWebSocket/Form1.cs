@@ -170,23 +170,50 @@ namespace MultiPdfWebSocket
             if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.SHOW_PDF_SERVICE))
             {
                 responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.SHOW_PDF_SERVICE, 
-                    Result.Success(ShowPdfService(json_resultMessage))));
+                    ShowPdfService(json_resultMessage)));
             }
             if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.CLOSE_PDF_SERVICE))
             {
                 responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.SHOW_PDF_SERVICE, 
-                    Result.Success(ClosePdfService())));
+                    ClosePdfService()));
             }
             if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.ENABLE_TOOLBAR_BUTTON))
             {
                 responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.ENABLE_TOOLBAR_BUTTON, 
-                    Result.Success(EnableToolBarButton(json_resultMessage))));
+                    EnableToolBarButton(json_resultMessage)));
             }
             if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.SNCA_OPEN_PDF))
             {
-                
+                responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.SNCA_OPEN_PDF, OpenPdf()));
             }
-
+            if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.SNCA_OPEN_PDF_BY_PATH))
+            {
+                responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.SNCA_OPEN_PDF_BY_PATH, 
+                    OpenPdfByPath(json_resultMessage)));
+            }
+            if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.GET_FILE_PATH))
+            {
+                responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.GET_FILE_PATH, GetFilePath()));
+            }
+            if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.PRINT_FILE))
+            {
+                responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.PRINT_FILE, PrintFile()));
+            }
+            if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.GET_REAL_SIGNATURES))
+            {
+                responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.GET_REAL_SIGNATURES,
+                    GetRealSignatures()));
+            }
+            if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.GET_CURRENT_SIGNATURE_COUNT))
+            {
+                responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.GET_CURRENT_SIGNATURE_COUNT,
+                    GetCurrentSignatureCount()));
+            }
+            if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.TZ_GET_USER_SIGN_COUNT))
+            {
+                responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.TZ_GET_USER_SIGN_COUNT,
+                    GetUserSignCount(json_resultMessage)));
+            }
             // 发送回执消息
             byte[] responseBytes = Encoding.UTF8.GetBytes(responseMessage);
             await websocket.SendAsync(new ArraySegment<byte>(responseBytes), WebSocketMessageType.Text, true, CancellationToken.None);
@@ -197,50 +224,55 @@ namespace MultiPdfWebSocket
         /// </summary>
         /// <param name="Parameter"></param>
         /// <returns></returns>
-        public string ShowPdfService(JObject Parameter)
+        private Result ShowPdfService(JObject Parameter)
         {
-            if ((bool)Parameter[ProfileConstant.PARAMETER]["TopMost"])
+            if (Parameter[ProfileConstant.PARAMETER]["TopMost"] != null)
             {
-                this.TopMost = true;
+                if ((bool)Parameter[ProfileConstant.PARAMETER]["TopMost"])
+                {
+                    this.TopMost = true;
+                }
+                else
+                {
+                    this.TopMost = false;
+                }
+                if (Parameter[ProfileConstant.PARAMETER].ToList().Count > 1)
+                {
+                    int posX = ProfileConstant.DEFAULT_POS_X, posY = ProfileConstant.DEFAULT_POS_Y;
+                    int width = ProfileConstant.DEFAULT_WIDTH, height = ProfileConstant.DEFAULT_HEIGHT;
+                    if (Parameter[ProfileConstant.PARAMETER]["posX"] != null)
+                        int.TryParse(Parameter[ProfileConstant.PARAMETER]["posX"].ToString(), out posX);
+                    if (Parameter[ProfileConstant.PARAMETER]["posY"] != null)
+                        int.TryParse(Parameter[ProfileConstant.PARAMETER]["posY"].ToString(), out posY);
+                    if (Parameter[ProfileConstant.PARAMETER]["width"] != null)
+                        int.TryParse(Parameter[ProfileConstant.PARAMETER]["width"].ToString(), out width);
+                    if (Parameter[ProfileConstant.PARAMETER]["height"] != null)
+                        int.TryParse(Parameter[ProfileConstant.PARAMETER]["height"].ToString(), out height);
+                    this.WindowState = FormWindowState.Normal;
+                    this.Location = new Point(posX, posY);                      // 设置窗口的位置
+                    this.Size = new Size(width, height);                        // 设置窗口的大小
+                    this.axPDFView1.Location = new Point(0, 0);                 // 位置更新后设置控件相对位置
+                    this.axPDFView1.Size = new Size(width, height);             // 保证控件随外框大小变化
+                }
+                else
+                {
+                    this.WindowState = FormWindowState.Normal;
+                    this.StartPosition = FormStartPosition.CenterScreen;        // 窗口显示在屏幕中央
+                }
+                return Result.Success(MessageConstant.SHOWPDFSERVICE_SUCCESSFUL);
             }
             else
-            {
-                this.TopMost = false;
-            }
-            if (Parameter[ProfileConstant.PARAMETER].ToList().Count > 1)
-            {
-                int posX = ProfileConstant.DEFAULT_POS_X, posY = ProfileConstant.DEFAULT_POS_Y;
-                int width = ProfileConstant.DEFAULT_WIDTH, height = ProfileConstant.DEFAULT_HEIGHT;
-                if (Parameter[ProfileConstant.PARAMETER]["posX"] != null)
-                    int.TryParse(Parameter[ProfileConstant.PARAMETER]["posX"].ToString(), out posX);
-                if (Parameter[ProfileConstant.PARAMETER]["posY"] != null)
-                    int.TryParse(Parameter[ProfileConstant.PARAMETER]["posY"].ToString(), out posY);
-                if (Parameter[ProfileConstant.PARAMETER]["width"] != null)
-                    int.TryParse(Parameter[ProfileConstant.PARAMETER]["width"].ToString(), out width);
-                if (Parameter[ProfileConstant.PARAMETER]["height"] != null)
-                    int.TryParse(Parameter[ProfileConstant.PARAMETER]["height"].ToString(), out height);
-                this.WindowState = FormWindowState.Normal;
-                this.Location = new Point(posX, posY);                      // 设置窗口的位置
-                this.Size = new Size(width, height);                        // 设置窗口的大小
-                this.axPDFView1.Location = new Point(0, 0);                 // 位置更新后设置控件相对位置
-                this.axPDFView1.Size = new Size(width, height);             // 保证控件随外框大小变化
-            }
-            else
-            {
-                this.WindowState = FormWindowState.Normal;
-                this.StartPosition = FormStartPosition.CenterScreen;        // 窗口显示在屏幕中央
-            }
-            return MessageConstant.SHOWPDFSERVICE_SUCCESSFUL;
+                return Result.Error(MessageConstant.PARAMETER_ERROR);
         }
 
         /// <summary>
         /// 隐藏Pdf插件
         /// </summary>
         /// <returns></returns>
-        public string ClosePdfService()
+        private Result ClosePdfService()
         {
             this.WindowState = FormWindowState.Minimized;
-            return MessageConstant.CLOSEPDFSERVICE_SUCCESSFUL;
+            return Result.Success(MessageConstant.CLOSEPDFSERVICE_SUCCESSFUL);
         }
 
         /// <summary>
@@ -248,25 +280,30 @@ namespace MultiPdfWebSocket
         /// </summary>
         /// <param name="Parameter"></param>
         /// <returns></returns>
-        public string EnableToolBarButton(JObject Parameter)
+        private Result EnableToolBarButton(JObject Parameter)
         {
-            if ((bool)Parameter[ProfileConstant.PARAMETER]["IsEnable"])
+            if (Parameter[ProfileConstant.PARAMETER]["IsEnable"] != null && Parameter[ProfileConstant.PARAMETER]["ButtonId"] != null)
             {
-                DealEnableToolBarButton(Parameter);
-                return MessageConstant.TOOLBAR_BUTTON_DISPLAY_SUCCESSFUL;
+                if ((bool)Parameter[ProfileConstant.PARAMETER]["IsEnable"])
+                {
+                    DealEnableToolBarButton(Parameter);
+                    return Result.Success(MessageConstant.TOOLBAR_BUTTON_DISPLAY_SUCCESSFUL);
+                }
+                else
+                {
+                    DealEnableToolBarButton(Parameter);
+                    return Result.Success(MessageConstant.TOOLBAR_BUTTON_HIDDEN_SUCCESSFUL);
+                }
             }
             else
-            {
-                DealEnableToolBarButton(Parameter);
-                return MessageConstant.TOOLBAR_BUTTON_HIDDEN_SUCCESSFUL;
-            }
+                return Result.Error(MessageConstant.PARAMETER_ERROR);  
         }
 
         /// <summary>
         /// 隐藏ToolBarButton具体实现
         /// </summary>
         /// <param name="Parameter"></param>
-        public void DealEnableToolBarButton(JObject Parameter)
+        private void DealEnableToolBarButton(JObject Parameter)
         {
             if (Parameter[ProfileConstant.PARAMETER]["ButtonId"].ToString().Length > 1)
             {
@@ -289,16 +326,16 @@ namespace MultiPdfWebSocket
         /// </summary>
         /// <param name="Parameter"></param>
         /// <returns></returns>
-        public string OpenPdf()
+        private Result OpenPdf()
         {
             int ret = this.axPDFView1.SNCAOpenPdf();
             if (ret == 0)
             {
-                return DealGetFilePath();
+                return Result.Success(DealGetFilePath());
             }
             else
             {
-                return MessageConstant.OPEN_FILE_FAILED;
+                return Result.Error(MessageConstant.OPEN_FILE_FAILED);
             }
         }
 
@@ -306,7 +343,7 @@ namespace MultiPdfWebSocket
         /// 获取当前打开文档的全路径
         /// </summary>
         /// <returns></returns>
-        public string DealGetFilePath()
+        private string DealGetFilePath()
         {
             return this.axPDFView1.GetFilePath();
         }
@@ -316,28 +353,131 @@ namespace MultiPdfWebSocket
         /// </summary>
         /// <param name="Parameter"></param>
         /// <returns></returns>
-        public string OpenPdfByPath(JObject Parameter)
+        private Result OpenPdfByPath(JObject Parameter)
         {
-            int.TryParse(Parameter[ProfileConstant.PARAMETER]["Type"].ToString(), out int type);
-            string path = Parameter[ProfileConstant.PARAMETER]["Path"].ToString();
-            int ret = this.axPDFView1.SNCAOpenPdfByPath(path, type);
-            if (ret == 0)
+            if (Parameter[ProfileConstant.PARAMETER]["Type"] != null && Parameter[ProfileConstant.PARAMETER]["Path"] != null)
             {
-                return DealGetFilePath();
+                int.TryParse(Parameter[ProfileConstant.PARAMETER]["Type"].ToString(), out int type);
+                string path = Parameter[ProfileConstant.PARAMETER]["Path"].ToString();
+                if (this.axPDFView1.SNCAOpenPdfByPath(path, type) == 0)
+                {
+                    return Result.Success(DealGetFilePath() + MessageConstant.OPEN_FILE_SUCCESSFUL);
+                }
+                else
+                {
+                    return Result.Error(MessageConstant.OPEN_FILE_FAILED);
+                }
             }
             else
             {
-                return MessageConstant.OPEN_FILE_FAILED;
+                return Result.Error(MessageConstant.PARAMETER_ERROR);
             }
+        }
+
+        /// <summary>
+        /// 判断是否有文件打开
+        /// </summary>
+        /// <returns></returns>
+        private Boolean IsOpenAFile()
+        {
+            string filePath = DealGetFilePath();
+            if (filePath != null && filePath != "")
+            {
+                return true;
+            }
+            else
+                return false;
         }
 
         /// <summary>
         /// 获取打开文件路径
         /// </summary>
         /// <returns></returns>
-        public string GetFilePath()
+        private Result GetFilePath()
         {
-            return DealGetFilePath();
+            if (IsOpenAFile())
+            {
+                return Result.Success(DealGetFilePath());
+            }
+            else
+            {
+                return Result.Error(MessageConstant.NO_OPEN_FILES);
+            }
+        }
+
+        /// <summary>
+        /// 打印文件
+        /// </summary>
+        /// <returns></returns>
+        private Result PrintFile()
+        {
+            if (IsOpenAFile())
+            {
+                this.axPDFView1.PrintFile();
+                return Result.Success(MessageConstant.FILE_PRINTED_SUCCESSFULLY);
+            }
+            else
+            {
+                return Result.Error(MessageConstant.FILE_PRINTING_FAILED);
+            }
+        }
+
+        /// <summary>
+        /// 获取印章的详细信息,用于无序签章
+        /// </summary>
+        /// <returns></returns>
+        private Result GetRealSignatures()
+        {
+            if (IsOpenAFile())
+            {
+                // TODO  以下函数需要参数，需要进一步处理
+                // this.axPDFView1.GetRealSignatures()
+                return Result.Success("成功");
+            }
+            else
+                return Result.Error(MessageConstant.GET_SEAL_INFO_FAILED);
+        }
+
+        /// <summary>
+        /// 获取当前打开文档的印章数量
+        /// </summary>
+        /// <returns></returns>
+        private Result GetCurrentSignatureCount()
+        {
+            if (IsOpenAFile())
+            {
+                return Result.Success(this.axPDFView1.GetCurrentSignatureCount().ToString());
+            }
+            else
+            {
+                return Result.Error(MessageConstant.GET_SEAL_NUMBER_FAILED);
+            }
+        }
+
+        /// <summary>
+        /// 获取相同证书序列号下的印章数量
+        /// </summary>
+        /// <param name="Parameter"></param>
+        /// <returns></returns>
+        private Result GetUserSignCount(JObject Parameter)
+        {
+            
+            if (Parameter[ProfileConstant.PARAMETER]["CertCode"] != null)
+            {
+                if (IsOpenAFile())
+                {
+                    string CertCode = Parameter[ProfileConstant.PARAMETER]["CertCode"].ToString();
+                    return Result.Success(this.axPDFView1.TZGetUserSignCount(CertCode).ToString());
+                }
+                else
+                {
+                    return Result.Error(MessageConstant.GET_SEAL_NUMBER_FAILED);
+                }
+            }
+            else
+            {
+                return Result.Error(MessageConstant.PARAMETER_ERROR);
+            }
         }
 
         /// <summary>

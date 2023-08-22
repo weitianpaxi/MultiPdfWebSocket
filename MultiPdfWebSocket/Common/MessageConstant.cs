@@ -11,8 +11,15 @@ namespace MultiPdfWebSocket.Common
     /// </summary>
     class MessageConstant
     {
+        /// 参数问题返回消息
+
+        /// <summary>
+        /// 异常参数
+        /// </summary>
+        public const string PARAMETER_ERROR = "异常参数";
+
         /// 以下是处理OCX控件消息的响应消息
-        
+
         /// <summary>
         /// 签章消息结束提示信息
         /// </summary>
@@ -49,5 +56,30 @@ namespace MultiPdfWebSocket.Common
         /// 文件打开失败
         /// </summary>
         public const string OPEN_FILE_FAILED = "文件打开失败";
+
+        /// <summary>
+        /// 没有打开文件
+        /// </summary>
+        public const string NO_OPEN_FILES = "未打开文件，请打开文件后操作";
+
+        /// <summary>
+        /// 文件打印成功
+        /// </summary>
+        public const string FILE_PRINTED_SUCCESSFULLY = "文件打印成功";
+
+        /// <summary>
+        /// 文件打印失败
+        /// </summary>
+        public const string FILE_PRINTING_FAILED = "文件打印失败";
+
+        /// <summary>
+        /// 获取印章数量失败
+        /// </summary>
+        public const string GET_SEAL_NUMBER_FAILED = "获取印章数量失败";
+
+        /// <summary>
+        /// 获取印章信息失败
+        /// </summary>
+        public const string GET_SEAL_INFO_FAILED = "获取印章信息失败";
     }
 }
