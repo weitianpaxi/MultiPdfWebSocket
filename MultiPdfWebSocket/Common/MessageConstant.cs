@@ -39,5 +39,15 @@ namespace MultiPdfWebSocket.Common
         /// 工具栏按钮显示成功
         /// </summary>
         public const string TOOLBAR_BUTTON_DISPLAY_SUCCESSFUL = "工具栏按钮显示成功";
+
+        /// <summary>
+        /// 文件打开成功
+        /// </summary>
+        public const string OPEN_FILE_SUCCESSFUL = "文件打开成功";
+
+        /// <summary>
+        /// 文件打开失败
+        /// </summary>
+        public const string OPEN_FILE_FAILED = "文件打开失败";
     }
 }

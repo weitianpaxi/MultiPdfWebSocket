@@ -32,6 +32,27 @@ namespace MultiPdfWebSocket.Common
         public const int CA_TYPE = 0;
 
         /// <summary>
+        /// 窗体默认坐标X轴位置
+        /// </summary>
+        public const int DEFAULT_POS_X = 0;
+
+        /// <summary>
+        /// 窗体默认坐标Y轴位置
+        /// </summary>
+        public const int DEFAULT_POS_Y = 0;
+
+        /// <summary>
+        /// 窗体默认宽度
+        /// </summary>
+        public const int DEFAULT_WIDTH = 1300;
+
+        /// <summary>
+        /// 窗体默认高度
+        /// </summary>
+        public const int DEFAULT_HEIGHT = 650;
+
+
+        /// <summary>
         /// 客户端请求JSON中执行方法key值
         /// </summary>
         public const string METHOD = "Method";

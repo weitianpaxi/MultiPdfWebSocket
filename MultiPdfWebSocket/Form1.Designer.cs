@@ -65,7 +65,7 @@ namespace MultiPdfWebSocket
 
         #endregion
 
-        private AxPDFVIEWLib.AxPDFView axPDFView1;
+        public AxPDFVIEWLib.AxPDFView axPDFView1;
     }
 }
 

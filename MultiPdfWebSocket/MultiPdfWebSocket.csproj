@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\EventMessageConstant.cs" />
     <Compile Include="Common\InterfaceMethodConstant.cs" />
     <Compile Include="Common\MessageConstant.cs" />
     <Compile Include="Common\OperationalStateConstant.cs" />
