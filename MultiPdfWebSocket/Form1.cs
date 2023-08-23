@@ -22,11 +22,11 @@ namespace MultiPdfWebSocket
 {
     public partial class Form1 : Form
     {
-        private const int BufferSize = ProfileConstant.REQUEST_SIZE;
-        private WebSocket websocket;
-        private string userIpAddress;
-        private Boolean selfSign = true;
-        private Boolean messageSign = false;
+        private const int BufferSize = ProfileConstant.REQUEST_SIZE;    // 消息体默认大小
+        private WebSocket websocket;                    // 服务器对象
+        private string userIpAddress;                   // 连接客户端地址
+        private Boolean selfSignState = true;           // 用户自主签章状态
+        private Boolean messageSignState = false;       // 消息体签章状态
         public Form1()
         {
             InitializeComponent();
@@ -154,7 +154,7 @@ namespace MultiPdfWebSocket
         private async Task ProcessMessage(byte[] buffer, int length)
         {
             string responseMessage = "";            // 定义返回消息
-            //int ret;                                // 定义操作状态
+            //this.TopMost = true;
             // 处理接收到的消息
             string resultMessage = Encoding.UTF8.GetString(buffer, 0, length);                      // 转换接受到的数据编码格式 
             if (resultMessage == null || resultMessage == "")
@@ -199,7 +199,7 @@ namespace MultiPdfWebSocket
                 {
                     responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.TZ_SIGN_BY_POS_3, 
                         TZSignByPos3(json_resultMessage)));
-                    selfSign = true;    // 更新用户自主签章状态
+                    selfSignState = true;    // 更新用户自主签章状态
                 }
                 if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.GET_REAL_SIGNATURES))
                 {
@@ -416,8 +416,8 @@ namespace MultiPdfWebSocket
             {
                 if (IsOpenAFile())
                 {
-                    selfSign = false;
-                    messageSign = true;
+                    selfSignState = false;
+                    messageSignState = true;
                     string pages = Parameter[ProfileConstant.PARAMETER]["Pages"].ToString();
                     int.TryParse(Parameter[ProfileConstant.PARAMETER]["xCenter"].ToString(), out int xCenter);
                     int.TryParse(Parameter[ProfileConstant.PARAMETER]["yCenter"].ToString(), out int yCenter);
@@ -442,8 +442,7 @@ namespace MultiPdfWebSocket
             if (IsOpenAFile())
             {
                 // TODO  以下函数需要参数，需要进一步处理
-                // this.axPDFView1.GetRealSignatures()
-                return Result.Success("成功");
+                return Result.Success(this.axPDFView1.GetRealSignatures(null));
             }
             else
                 return Result.Error(MessageConstant.GET_SEAL_INFO_FAILED);
@@ -491,7 +490,7 @@ namespace MultiPdfWebSocket
         private void AxPDFView1_AfterSignPDF(object sender, EventArgs e)
         {
             LogHelper.log.Info(userIpAddress + " => Executed signature operation");
-            if (selfSign || messageSign != true)
+            if (selfSignState || messageSignState != true)
             {
                 string message = JsonConvert.SerializeObject(new Response(EventMessageConstant.AFTER_SIGN_PDF, Result.Success(MessageConstant.USER_SELF_SIGN)));
                 byte[] responseBytes = Encoding.UTF8.GetBytes(message);

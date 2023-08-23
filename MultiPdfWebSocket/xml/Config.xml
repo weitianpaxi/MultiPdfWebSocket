@@ -3,7 +3,7 @@
 	<!--日志等级-->
 	<LogLevel>0</LogLevel>
 	<!--日志目录-->
-	<LogFilePath>/log</LogFilePath>
+	<LogFilePath>./log</LogFilePath>
 	<!--日志存在天数-->
 	<LogFileExistDay>1</LogFileExistDay>
 </appSettings>
