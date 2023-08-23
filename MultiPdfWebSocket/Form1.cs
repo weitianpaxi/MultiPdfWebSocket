@@ -25,6 +25,8 @@ namespace MultiPdfWebSocket
         private const int BufferSize = ProfileConstant.REQUEST_SIZE;
         private WebSocket websocket;
         private string userIpAddress;
+        private Boolean selfSign = true;
+        private Boolean messageSign = false;
         public Form1()
         {
             InitializeComponent();
@@ -197,6 +199,7 @@ namespace MultiPdfWebSocket
                 {
                     responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.TZ_SIGN_BY_POS_3, 
                         TZSignByPos3(json_resultMessage)));
+                    selfSign = true;    // 更新用户自主签章状态
                 }
                 if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.GET_REAL_SIGNATURES))
                 {
@@ -353,7 +356,7 @@ namespace MultiPdfWebSocket
                 int.TryParse(Parameter[ProfileConstant.PARAMETER]["Type"].ToString(), out int type);
                 string path = Parameter[ProfileConstant.PARAMETER]["Path"].ToString();
                 if (this.axPDFView1.SNCAOpenPdfByPath(path, type) == 0)
-                    return Result.Success(DealGetFilePath() + MessageConstant.OPEN_FILE_SUCCESSFUL);
+                    return Result.Success(DealGetFilePath());
                 else
                     return Result.Error(MessageConstant.OPEN_FILE_FAILED);
             }
@@ -413,6 +416,8 @@ namespace MultiPdfWebSocket
             {
                 if (IsOpenAFile())
                 {
+                    selfSign = false;
+                    messageSign = true;
                     string pages = Parameter[ProfileConstant.PARAMETER]["Pages"].ToString();
                     int.TryParse(Parameter[ProfileConstant.PARAMETER]["xCenter"].ToString(), out int xCenter);
                     int.TryParse(Parameter[ProfileConstant.PARAMETER]["yCenter"].ToString(), out int yCenter);
@@ -486,9 +491,12 @@ namespace MultiPdfWebSocket
         private void AxPDFView1_AfterSignPDF(object sender, EventArgs e)
         {
             LogHelper.log.Info(userIpAddress + " => Executed signature operation");
-            string message = JsonConvert.SerializeObject(new Response(EventMessageConstant.AFTER_SIGN_PDF, Result.Success(MessageConstant.USER_SELF_SIGN)));
-            byte[] responseBytes = Encoding.UTF8.GetBytes(message);
-            websocket.SendAsync(new ArraySegment<byte>(responseBytes), WebSocketMessageType.Text, true, CancellationToken.None);
+            if (selfSign || messageSign != true)
+            {
+                string message = JsonConvert.SerializeObject(new Response(EventMessageConstant.AFTER_SIGN_PDF, Result.Success(MessageConstant.USER_SELF_SIGN)));
+                byte[] responseBytes = Encoding.UTF8.GetBytes(message);
+                websocket.SendAsync(new ArraySegment<byte>(responseBytes), WebSocketMessageType.Text, true, CancellationToken.None);
+            }
             throw new NotImplementedException();
         }
     }
