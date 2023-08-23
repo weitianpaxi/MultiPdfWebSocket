@@ -73,6 +73,17 @@ namespace MultiPdfWebSocket.Common
         public const string FILE_PRINTING_FAILED = "文件打印失败";
 
         /// <summary>
+        /// 坐标签章成功
+        /// </summary>
+        public const string SIGN_BY_POS_SUCCESSFUL = "坐标签章成功";
+
+        /// <summary>
+        /// 坐标签章失败
+        /// </summary>
+        public const string SIGN_BY_POS_FAILED = "坐标签章失败";
+
+
+        /// <summary>
         /// 获取印章数量失败
         /// </summary>
         public const string GET_SEAL_NUMBER_FAILED = "获取印章数量失败";

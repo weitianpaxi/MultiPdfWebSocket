@@ -28,15 +28,15 @@ namespace MultiPdfWebSocket
         public Form1()
         {
             InitializeComponent();
-            logInit();
-            ocxInit();
+            LogInit();
+            OcxInit();
             _ = this.Start();
         }
 
         /// <summary>
         /// 初始化OCX控件
         /// </summary>
-        private void ocxInit()
+        private void OcxInit()
         {
             this.axPDFView1.SetRCPath(ProfileConstant.RC_PATH);
             this.axPDFView1.SetCaType(0);
@@ -46,7 +46,7 @@ namespace MultiPdfWebSocket
         /// <summary>
         /// 初始化日志记录信息
         /// </summary>
-        private void logInit()
+        private void LogInit()
         {
             //读取XML配置信息
             XMLHelper.ReadXml();
@@ -87,13 +87,9 @@ namespace MultiPdfWebSocket
             {
                 HttpListenerContext context = await listener.GetContextAsync();
                 if (context.Request.IsWebSocketRequest)
-                {
                     ProcessWebSocketRequest(context);
-                }
                 else
-                {
                     context.Response.Close();
-                }
             }
         }
 
@@ -140,14 +136,10 @@ namespace MultiPdfWebSocket
                 WebSocketReceiveResult result = await websocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
 
                 if (result.MessageType == WebSocketMessageType.Close)
-                {
                     await websocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Close", CancellationToken.None);
-                }
                 else
-                {
                     // 处理接收到的消息
                     await ProcessMessage(buffer, result.Count);
-                }
             }
         }
 
@@ -162,58 +154,67 @@ namespace MultiPdfWebSocket
             string responseMessage = "";            // 定义返回消息
             //int ret;                                // 定义操作状态
             // 处理接收到的消息
-            //this.TopMost = true;                    // 窗口置顶显示   
             string resultMessage = Encoding.UTF8.GetString(buffer, 0, length);                      // 转换接受到的数据编码格式 
-
-            var json_resultMessage = JsonConvert.DeserializeObject<JObject>(resultMessage);         // json数据序列化
-            LogHelper.log.Info("json数据序列化为，{}" + json_resultMessage.ToString());
-            if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.SHOW_PDF_SERVICE))
+            if (resultMessage == null || resultMessage == "")
+                responseMessage = MessageConstant.PARAMETER_ERROR;
+            else
             {
-                responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.SHOW_PDF_SERVICE, 
-                    ShowPdfService(json_resultMessage)));
+                var json_resultMessage = JsonConvert.DeserializeObject<JObject>(resultMessage);         // json数据序列化
+                LogHelper.log.Info("json数据序列化为，{}" + json_resultMessage.ToString());
+                if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.SHOW_PDF_SERVICE))
+                {
+                    responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.SHOW_PDF_SERVICE,
+                        ShowPdfService(json_resultMessage)));
+                }
+                if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.CLOSE_PDF_SERVICE))
+                {
+                    responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.SHOW_PDF_SERVICE,
+                        ClosePdfService()));
+                }
+                if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.ENABLE_TOOLBAR_BUTTON))
+                {
+                    responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.ENABLE_TOOLBAR_BUTTON,
+                        EnableToolBarButton(json_resultMessage)));
+                }
+                if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.SNCA_OPEN_PDF))
+                {
+                    responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.SNCA_OPEN_PDF, OpenPdf()));
+                }
+                if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.SNCA_OPEN_PDF_BY_PATH))
+                {
+                    responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.SNCA_OPEN_PDF_BY_PATH,
+                        OpenPdfByPath(json_resultMessage)));
+                }
+                if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.GET_FILE_PATH))
+                {
+                    responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.GET_FILE_PATH, GetFilePath()));
+                }
+                if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.PRINT_FILE))
+                {
+                    responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.PRINT_FILE, PrintFile()));
+                }
+                if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.TZ_SIGN_BY_POS_3))
+                {
+                    responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.TZ_SIGN_BY_POS_3, 
+                        TZSignByPos3(json_resultMessage)));
+                }
+                if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.GET_REAL_SIGNATURES))
+                {
+                    responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.GET_REAL_SIGNATURES,
+                        GetRealSignatures()));
+                }
+                if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.GET_CURRENT_SIGNATURE_COUNT))
+                {
+                    responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.GET_CURRENT_SIGNATURE_COUNT,
+                        GetCurrentSignatureCount()));
+                }
+                if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.TZ_GET_USER_SIGN_COUNT))
+                {
+                    responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.TZ_GET_USER_SIGN_COUNT,
+                        GetUserSignCount(json_resultMessage)));
+                }
             }
-            if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.CLOSE_PDF_SERVICE))
-            {
-                responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.SHOW_PDF_SERVICE, 
-                    ClosePdfService()));
-            }
-            if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.ENABLE_TOOLBAR_BUTTON))
-            {
-                responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.ENABLE_TOOLBAR_BUTTON, 
-                    EnableToolBarButton(json_resultMessage)));
-            }
-            if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.SNCA_OPEN_PDF))
-            {
-                responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.SNCA_OPEN_PDF, OpenPdf()));
-            }
-            if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.SNCA_OPEN_PDF_BY_PATH))
-            {
-                responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.SNCA_OPEN_PDF_BY_PATH, 
-                    OpenPdfByPath(json_resultMessage)));
-            }
-            if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.GET_FILE_PATH))
-            {
-                responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.GET_FILE_PATH, GetFilePath()));
-            }
-            if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.PRINT_FILE))
-            {
-                responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.PRINT_FILE, PrintFile()));
-            }
-            if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.GET_REAL_SIGNATURES))
-            {
-                responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.GET_REAL_SIGNATURES,
-                    GetRealSignatures()));
-            }
-            if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.GET_CURRENT_SIGNATURE_COUNT))
-            {
-                responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.GET_CURRENT_SIGNATURE_COUNT,
-                    GetCurrentSignatureCount()));
-            }
-            if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.TZ_GET_USER_SIGN_COUNT))
-            {
-                responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.TZ_GET_USER_SIGN_COUNT,
-                    GetUserSignCount(json_resultMessage)));
-            }
+            
             // 发送回执消息
             byte[] responseBytes = Encoding.UTF8.GetBytes(responseMessage);
             await websocket.SendAsync(new ArraySegment<byte>(responseBytes), WebSocketMessageType.Text, true, CancellationToken.None);
@@ -229,13 +230,9 @@ namespace MultiPdfWebSocket
             if (Parameter[ProfileConstant.PARAMETER]["TopMost"] != null)
             {
                 if ((bool)Parameter[ProfileConstant.PARAMETER]["TopMost"])
-                {
                     this.TopMost = true;
-                }
                 else
-                {
                     this.TopMost = false;
-                }
                 if (Parameter[ProfileConstant.PARAMETER].ToList().Count > 1)
                 {
                     int posX = ProfileConstant.DEFAULT_POS_X, posY = ProfileConstant.DEFAULT_POS_Y;
@@ -330,13 +327,9 @@ namespace MultiPdfWebSocket
         {
             int ret = this.axPDFView1.SNCAOpenPdf();
             if (ret == 0)
-            {
                 return Result.Success(DealGetFilePath());
-            }
             else
-            {
                 return Result.Error(MessageConstant.OPEN_FILE_FAILED);
-            }
         }
 
         /// <summary>
@@ -360,18 +353,12 @@ namespace MultiPdfWebSocket
                 int.TryParse(Parameter[ProfileConstant.PARAMETER]["Type"].ToString(), out int type);
                 string path = Parameter[ProfileConstant.PARAMETER]["Path"].ToString();
                 if (this.axPDFView1.SNCAOpenPdfByPath(path, type) == 0)
-                {
                     return Result.Success(DealGetFilePath() + MessageConstant.OPEN_FILE_SUCCESSFUL);
-                }
                 else
-                {
                     return Result.Error(MessageConstant.OPEN_FILE_FAILED);
-                }
             }
             else
-            {
                 return Result.Error(MessageConstant.PARAMETER_ERROR);
-            }
         }
 
         /// <summary>
@@ -382,9 +369,7 @@ namespace MultiPdfWebSocket
         {
             string filePath = DealGetFilePath();
             if (filePath != null && filePath != "")
-            {
                 return true;
-            }
             else
                 return false;
         }
@@ -396,13 +381,9 @@ namespace MultiPdfWebSocket
         private Result GetFilePath()
         {
             if (IsOpenAFile())
-            {
                 return Result.Success(DealGetFilePath());
-            }
             else
-            {
                 return Result.Error(MessageConstant.NO_OPEN_FILES);
-            }
         }
 
         /// <summary>
@@ -417,9 +398,34 @@ namespace MultiPdfWebSocket
                 return Result.Success(MessageConstant.FILE_PRINTED_SUCCESSFULLY);
             }
             else
-            {
                 return Result.Error(MessageConstant.FILE_PRINTING_FAILED);
+        }
+
+        /// <summary>
+        /// 坐标签章
+        /// </summary>
+        /// <returns></returns>
+        private Result TZSignByPos3(JObject Parameter)
+        {
+            if (Parameter[ProfileConstant.PARAMETER]["Pages"] != null &&
+                Parameter[ProfileConstant.PARAMETER]["xCenter"] != null &&
+                Parameter[ProfileConstant.PARAMETER]["yCenter"] != null)
+            {
+                if (IsOpenAFile())
+                {
+                    string pages = Parameter[ProfileConstant.PARAMETER]["Pages"].ToString();
+                    int.TryParse(Parameter[ProfileConstant.PARAMETER]["xCenter"].ToString(), out int xCenter);
+                    int.TryParse(Parameter[ProfileConstant.PARAMETER]["yCenter"].ToString(), out int yCenter);
+                    if (this.axPDFView1.TZSignByPos3(pages, xCenter, yCenter) == 0)
+                        return Result.Success(MessageConstant.SIGN_BY_POS_SUCCESSFUL);
+                    else
+                        return Result.Error(MessageConstant.SIGN_BY_POS_FAILED);
+                }
+                else
+                    return Result.Error(MessageConstant.NO_OPEN_FILES);
             }
+            else
+                return Result.Error(MessageConstant.PARAMETER_ERROR);
         }
 
         /// <summary>
@@ -445,13 +451,9 @@ namespace MultiPdfWebSocket
         private Result GetCurrentSignatureCount()
         {
             if (IsOpenAFile())
-            {
                 return Result.Success(this.axPDFView1.GetCurrentSignatureCount().ToString());
-            }
             else
-            {
                 return Result.Error(MessageConstant.GET_SEAL_NUMBER_FAILED);
-            }
         }
 
         /// <summary>
@@ -470,14 +472,10 @@ namespace MultiPdfWebSocket
                     return Result.Success(this.axPDFView1.TZGetUserSignCount(CertCode).ToString());
                 }
                 else
-                {
                     return Result.Error(MessageConstant.GET_SEAL_NUMBER_FAILED);
-                }
             }
             else
-            {
                 return Result.Error(MessageConstant.PARAMETER_ERROR);
-            }
         }
 
         /// <summary>
