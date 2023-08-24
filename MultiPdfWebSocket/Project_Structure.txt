@@ -1,0 +1,38 @@
+卷 新加卷 的文件夹 PATH 列表
+卷序列号为 964D-9D1A
+E:.
+│  App.config
+│  Form1.cs
+│  Form1.Designer.cs
+│  Form1.resx
+│  MultiPdfWebSocket.csproj
+│  packages.config
+│  Program.cs
+│  Project_Structure.txt
+│  README.md
+│  
+├─Common
+│      EventMessageConstant.cs
+│      InterfaceMethodConstant.cs
+│      MessageConstant.cs
+│      OperationalStateConstant.cs
+│      ProfileConstant.cs
+│      Response.cs
+│      Result.cs
+│      
+├─Config
+│      Config.xml
+│      
+├─Properties
+│      app.manifest
+│      AssemblyInfo.cs
+│      Resources.Designer.cs
+│      Resources.resx
+│      Settings.Designer.cs
+│      Settings.settings
+│      
+└─Utility
+        LogHelper.cs
+        LogParameter.cs
+        XMLHelper.cs
+        

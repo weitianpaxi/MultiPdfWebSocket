@@ -16,13 +16,13 @@ namespace MultiPdfWebSocket.Utility
             try
             {
                 XmlDocument doc = new XmlDocument();
-                doc.Load(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "XML", "Config.xml"));
+                doc.Load(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config", "Config.xml"));
                 var node = doc.SelectSingleNode("appSettings");
                 LogParameter.LogLevel = (LogLevelEnum)Enum.Parse(typeof(LogLevelEnum), node.SelectSingleNode("LogLevel").InnerText);
                 LogParameter.LogFilePath = node.SelectSingleNode("LogFilePath").InnerText;
                 LogParameter.LogFileExistDay = int.Parse(node.SelectSingleNode("LogFileExistDay").InnerText);
 
-                LogHelper.Debug("XML文件读取成功。");
+                LogHelper.Debug("配置文件读取成功。");
             }
             catch (Exception ex)
             {

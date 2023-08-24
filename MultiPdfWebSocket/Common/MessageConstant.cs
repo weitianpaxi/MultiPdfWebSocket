@@ -73,6 +73,31 @@ namespace MultiPdfWebSocket.Common
         public const string FILE_PRINTING_FAILED = "文件打印失败";
 
         /// <summary>
+        /// 文件关闭成功
+        /// </summary>
+        public const string CLOSE_FILE_SUCCESSFUL = "文件关闭成功";
+
+        /// <summary>
+        /// 另存为文件成功
+        /// </summary>
+        public const string SAVE_AS_FILE_SUCCESSFUL = "另存为文件成功";
+
+        /// <summary>
+        /// 另存为文件失败
+        /// </summary>
+        public const string SAVE_AS_FILE_FAILED = "另存为文件失败";
+
+        /// <summary>
+        /// 跳转页面成功
+        /// </summary>
+        public const string GOTO_PAGE_SUCCESSFUL = "跳转页面成功";
+
+        /// <summary>
+        /// 书签跳转成功
+        /// </summary>
+        public const string GOTO_BOOKMARK_SUCCESSFUL = "书签跳转成功";
+
+        /// <summary>
         /// 坐标签章成功
         /// </summary>
         public const string SIGN_BY_POS_SUCCESSFUL = "坐标签章成功";
@@ -82,6 +107,15 @@ namespace MultiPdfWebSocket.Common
         /// </summary>
         public const string SIGN_BY_POS_FAILED = "坐标签章失败";
 
+        /// <summary>
+        /// 关键字签章成功
+        /// </summary>
+        public const string SIGN_BY_KEYWORD_SUCCESSFUL = "关键字签章成功";
+
+        /// <summary>
+        /// 关键字签章失败
+        /// </summary>
+        public const string SIGN_BY_KEYWORD_FAILED = "关键字签章失败";
 
         /// <summary>
         /// 获取印章数量失败

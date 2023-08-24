@@ -17,7 +17,7 @@ namespace MultiPdfWebSocket
         static void Main()
         {
 
-            //防止程序多次启动
+            // 防止程序多次启动
             Process[] processes = Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName);
             if (processes.Length > 1)
             {
