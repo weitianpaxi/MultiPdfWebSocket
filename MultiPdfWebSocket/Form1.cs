@@ -156,7 +156,7 @@ namespace MultiPdfWebSocket
             string responseMessage = "";            // 定义返回消息
             //this.TopMost = true;
             // 处理接收到的消息
-            string resultMessage = Encoding.UTF8.GetString(buffer, 0, length);                      // 转换接受到的数据编码格式 
+            string resultMessage = Encoding.UTF8.GetString(buffer, 0, length);                          // 转换接受到的数据编码格式 
             if (resultMessage == null || resultMessage == "")
                 responseMessage = MessageConstant.PARAMETER_ERROR;
             else
@@ -226,6 +226,12 @@ namespace MultiPdfWebSocket
                 {
                     responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.TZ_SIGN_BY_POS_3, 
                         TZSignByPos3(json_resultMessage)));
+                    selfSignState = true;    // 更新用户自主签章状态
+                }
+                if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.TZ_SIGN_BY_KEYWORD_3))
+                {
+                    responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.TZ_SIGN_BY_KEYWORD_3,
+                        TZSignByKeyword3(json_resultMessage)));
                     selfSignState = true;    // 更新用户自主签章状态
                 }
                 if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.GET_REAL_SIGNATURES))
@@ -535,34 +541,6 @@ namespace MultiPdfWebSocket
         }
 
         /// <summary>
-        /// 关键字签章
-        /// </summary>
-        /// <param name="Parameter"></param>
-        /// <returns></returns>
-        private Result TZSignByKeyword3(JObject Parameter)
-        {
-            if (null != Parameter[ProfileConstant.PARAMETER]["Keyword"] &&
-                null != Parameter[ProfileConstant.PARAMETER]["Pages"] &&
-                null != Parameter[ProfileConstant.PARAMETER]["Indexes"])
-            {
-                if (IsOpenAFile())
-                {
-                    int ret = this.axPDFView1.TZSignByKeyword3(Parameter[ProfileConstant.PARAMETER]["Keyword"].ToString(),
-                        Parameter[ProfileConstant.PARAMETER]["Pages"].ToString(),
-                        Parameter[ProfileConstant.PARAMETER]["Indexes"].ToString());
-                    if (0 == ret)
-                        return Result.Success(MessageConstant.SIGN_BY_KEYWORD_SUCCESSFUL);
-                    else
-                        return Result.Error(MessageConstant.SIGN_BY_KEYWORD_FAILED);
-                }
-                else
-                    return Result.Error(MessageConstant.NO_OPEN_FILES);
-            }
-            else
-                return Result.Error(MessageConstant.PARAMETER_ERROR);
-        }
-
-        /// <summary>
         /// 坐标签章
         /// </summary>
         /// <returns></returns>
@@ -583,6 +561,36 @@ namespace MultiPdfWebSocket
                         return Result.Success(MessageConstant.SIGN_BY_POS_SUCCESSFUL);
                     else
                         return Result.Error(MessageConstant.SIGN_BY_POS_FAILED);
+                }
+                else
+                    return Result.Error(MessageConstant.NO_OPEN_FILES);
+            }
+            else
+                return Result.Error(MessageConstant.PARAMETER_ERROR);
+        }
+
+        /// <summary>
+        /// 关键字签章
+        /// </summary>
+        /// <param name="Parameter"></param>
+        /// <returns></returns>
+        private Result TZSignByKeyword3(JObject Parameter)
+        {
+            if (null != Parameter[ProfileConstant.PARAMETER]["Keyword"] &&
+                null != Parameter[ProfileConstant.PARAMETER]["Pages"] &&
+                null != Parameter[ProfileConstant.PARAMETER]["Indexes"])
+            {
+                if (IsOpenAFile())
+                {
+                    selfSignState = false;
+                    messageSignState = true;
+                    int ret = this.axPDFView1.TZSignByKeyword3(Parameter[ProfileConstant.PARAMETER]["Keyword"].ToString(),
+                        Parameter[ProfileConstant.PARAMETER]["Pages"].ToString(),
+                        Parameter[ProfileConstant.PARAMETER]["Indexes"].ToString());
+                    if (0 == ret)
+                        return Result.Success(MessageConstant.SIGN_BY_KEYWORD_SUCCESSFUL);
+                    else
+                        return Result.Error(MessageConstant.SIGN_BY_KEYWORD_FAILED);
                 }
                 else
                     return Result.Error(MessageConstant.NO_OPEN_FILES);
