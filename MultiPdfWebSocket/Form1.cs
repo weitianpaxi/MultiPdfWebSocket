@@ -22,9 +22,11 @@ namespace MultiPdfWebSocket
 {
     public partial class Form1 : Form
     {
-        private const int BufferSize = ProfileConstant.REQUEST_SIZE;
-        private WebSocket websocket;
-        private string userIpAddress;
+        private const int BufferSize = ProfileConstant.REQUEST_SIZE;    // 消息体默认大小
+        private WebSocket websocket;                    // 服务器对象
+        private string userIpAddress;                   // 连接客户端地址
+        private Boolean selfSignState = true;           // 用户自主签章状态
+        private Boolean messageSignState = false;       // 消息体签章状态
         public Form1()
         {
             InitializeComponent();
@@ -56,7 +58,7 @@ namespace MultiPdfWebSocket
                 DirectoryInfo di = new DirectoryInfo(LogParameter.LogFilePath);
                 if (!di.Exists)
                     di.Create();
-                FileInfo[] fi = di.GetFiles("Demo_*.log");
+                FileInfo[] fi = di.GetFiles("MultiPdfWebSocket_*.log");
                 DateTime dateTime = DateTime.Now;
                 foreach (FileInfo info in fi)
                 {
@@ -81,7 +83,7 @@ namespace MultiPdfWebSocket
             listener.Prefixes.Add(ProfileConstant.LISTENER_URL);
             listener.Start();
 
-            LogHelper.log.Info("WebSocket server started.");
+            LogHelper.Info("WebSocket server started.");
 
             while (true)
             {
@@ -106,20 +108,20 @@ namespace MultiPdfWebSocket
                 websocket = websocketContext.WebSocket;
 
                 userIpAddress = context.Request.UserHostAddress;    // 记录客户端请求IP
-                LogHelper.log.Info("WebSocket client " + userIpAddress + " connected.");
+                LogHelper.Info("WebSocket client " + userIpAddress + " connected.");
                 
                 await ReceiveLoop();
             }
             catch (Exception ex)
             {
-                LogHelper.log.Error($"WebSocket error: {ex.Message}");
+                LogHelper.Error($"WebSocket error: {ex.Message}");
             }
             finally
             {
                 if (websocketContext != null && websocketContext.WebSocket != null)
                     await websocketContext.WebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Close", CancellationToken.None);
 
-                LogHelper.log.Info("WebSocket client disconnected.");
+                LogHelper.Info("WebSocket client disconnected.");
             }
         }
 
@@ -152,15 +154,15 @@ namespace MultiPdfWebSocket
         private async Task ProcessMessage(byte[] buffer, int length)
         {
             string responseMessage = "";            // 定义返回消息
-            //int ret;                                // 定义操作状态
+            //this.TopMost = true;
             // 处理接收到的消息
-            string resultMessage = Encoding.UTF8.GetString(buffer, 0, length);                      // 转换接受到的数据编码格式 
+            string resultMessage = Encoding.UTF8.GetString(buffer, 0, length);                          // 转换接受到的数据编码格式 
             if (resultMessage == null || resultMessage == "")
                 responseMessage = MessageConstant.PARAMETER_ERROR;
             else
             {
                 var json_resultMessage = JsonConvert.DeserializeObject<JObject>(resultMessage);         // json数据序列化
-                LogHelper.log.Info("json数据序列化为，{}" + json_resultMessage.ToString());
+                LogHelper.Info("json数据序列化为：" + json_resultMessage.ToString());
                 if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.SHOW_PDF_SERVICE))
                 {
                     responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.SHOW_PDF_SERVICE,
@@ -193,10 +195,44 @@ namespace MultiPdfWebSocket
                 {
                     responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.PRINT_FILE, PrintFile()));
                 }
+                if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.CLOSE_FILE))
+                {
+                    responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.CLOSE_FILE, CloseFile()));
+                }
+                if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.SAVS_AS))
+                {
+                    responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.SAVS_AS, 
+                        SaveAs(json_resultMessage)));
+                }
+                if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.GET_PAGE_COUNTS))
+                {
+                    responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.GET_PAGE_COUNTS, GetPageCounts()));
+                }
+                if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.GET_CUR_PAGE_NO))
+                {
+                    responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.GET_CUR_PAGE_NO, GetCurPageNo()));
+                }
+                if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.SET_PAGE_INDEX))
+                {
+                    responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.SET_PAGE_INDEX,
+                        SetPageIndex(json_resultMessage)));
+                }
+                if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.GOTO_BOOKMARK_BY_BOOKMARK_NAME))
+                {
+                    responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.GOTO_BOOKMARK_BY_BOOKMARK_NAME,
+                        GoToBookMarkByBookMarkName(json_resultMessage)));
+                }
                 if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.TZ_SIGN_BY_POS_3))
                 {
                     responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.TZ_SIGN_BY_POS_3, 
                         TZSignByPos3(json_resultMessage)));
+                    selfSignState = true;    // 更新用户自主签章状态
+                }
+                if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.TZ_SIGN_BY_KEYWORD_3))
+                {
+                    responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.TZ_SIGN_BY_KEYWORD_3,
+                        TZSignByKeyword3(json_resultMessage)));
+                    selfSignState = true;    // 更新用户自主签章状态
                 }
                 if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.GET_REAL_SIGNATURES))
                 {
@@ -279,7 +315,8 @@ namespace MultiPdfWebSocket
         /// <returns></returns>
         private Result EnableToolBarButton(JObject Parameter)
         {
-            if (Parameter[ProfileConstant.PARAMETER]["IsEnable"] != null && Parameter[ProfileConstant.PARAMETER]["ButtonId"] != null)
+            if (Parameter[ProfileConstant.PARAMETER]["IsEnable"] != null && 
+                Parameter[ProfileConstant.PARAMETER]["ButtonId"] != null)
             {
                 if ((bool)Parameter[ProfileConstant.PARAMETER]["IsEnable"])
                 {
@@ -348,12 +385,13 @@ namespace MultiPdfWebSocket
         /// <returns></returns>
         private Result OpenPdfByPath(JObject Parameter)
         {
-            if (Parameter[ProfileConstant.PARAMETER]["Type"] != null && Parameter[ProfileConstant.PARAMETER]["Path"] != null)
+            if (Parameter[ProfileConstant.PARAMETER]["Type"] != null && 
+                Parameter[ProfileConstant.PARAMETER]["Path"] != null)
             {
                 int.TryParse(Parameter[ProfileConstant.PARAMETER]["Type"].ToString(), out int type);
                 string path = Parameter[ProfileConstant.PARAMETER]["Path"].ToString();
                 if (this.axPDFView1.SNCAOpenPdfByPath(path, type) == 0)
-                    return Result.Success(DealGetFilePath() + MessageConstant.OPEN_FILE_SUCCESSFUL);
+                    return Result.Success(DealGetFilePath());
                 else
                     return Result.Error(MessageConstant.OPEN_FILE_FAILED);
             }
@@ -402,6 +440,107 @@ namespace MultiPdfWebSocket
         }
 
         /// <summary>
+        /// 关闭文件
+        /// </summary>
+        /// <returns></returns>
+        private Result CloseFile()
+        {
+            if (IsOpenAFile())
+            {
+                this.axPDFView1.CloseFile();
+                return Result.Success(MessageConstant.CLOSE_FILE_SUCCESSFUL);
+            }
+            else
+                return Result.Error(MessageConstant.NO_OPEN_FILES);
+        }
+
+        /// <summary>
+        /// 另存为文件
+        /// </summary>
+        /// <param name="Parameter"></param>
+        /// <returns></returns>
+        private Result SaveAs(JObject Parameter)
+        {
+            if (Parameter[ProfileConstant.PARAMETER]["FilePath"] != null &&
+                Parameter[ProfileConstant.PARAMETER]["IsReplace"] != null)
+            {
+                int.TryParse(Parameter[ProfileConstant.PARAMETER]["IsReplace"].ToString(), out int IsReplace);
+                if (this.axPDFView1.SaveAs(Parameter[ProfileConstant.PARAMETER]["FilePath"].ToString(), IsReplace) == 1)
+                    return Result.Success(MessageConstant.SAVE_AS_FILE_SUCCESSFUL);
+                else
+                    return Result.Error(MessageConstant.SAVE_AS_FILE_FAILED);
+            }
+            else
+                return Result.Error(MessageConstant.PARAMETER_ERROR);
+        }
+
+        /// <summary>
+        /// 获取文件总页数
+        /// </summary>
+        /// <returns></returns>
+        private Result GetPageCounts()
+        {
+            if (IsOpenAFile())
+                return Result.Success(this.axPDFView1.GetPageCounts().ToString());
+            else
+                return Result.Error(MessageConstant.NO_OPEN_FILES);
+        }
+
+        /// <summary>
+        /// 获取当前文档停留页码
+        /// </summary>
+        /// <returns></returns>
+        private Result GetCurPageNo()
+        {
+            if (IsOpenAFile())
+                return Result.Success(this.axPDFView1.GetCurPageNo().ToString());
+            else
+                return Result.Error(MessageConstant.NO_OPEN_FILES);
+        }
+
+        /// <summary>
+        /// 跳转页面
+        /// </summary>
+        /// <returns></returns>
+        private Result SetPageIndex(JObject Parameter)
+        {
+            if (Parameter[ProfileConstant.PARAMETER]["PageIndex"] != null)
+            {
+                if (IsOpenAFile())
+                {
+                    int.TryParse(Parameter[ProfileConstant.PARAMETER]["PageIndex"].ToString(), out int pageIndex);
+                    this.axPDFView1.TZGoToPage(pageIndex);
+                    return Result.Success(MessageConstant.GOTO_PAGE_SUCCESSFUL);
+                }
+                else
+                    return Result.Error(MessageConstant.NO_OPEN_FILES);
+            }
+            else
+                return Result.Error(MessageConstant.PARAMETER_ERROR);
+        }
+
+        /// <summary>
+        /// 书签跳转
+        /// </summary>
+        /// <param name="Parameter"></param>
+        /// <returns></returns>
+        private Result GoToBookMarkByBookMarkName(JObject Parameter)
+        {
+            if (Parameter[ProfileConstant.PARAMETER]["BookMarkName"] != null)
+            {
+                if (IsOpenAFile())
+                {
+                    this.axPDFView1.GoToBookMarkByBookMarkName(Parameter[ProfileConstant.PARAMETER]["BookMarkName"].ToString());
+                    return Result.Success(MessageConstant.GOTO_BOOKMARK_SUCCESSFUL);
+                }
+                else
+                    return Result.Error(MessageConstant.NO_OPEN_FILES);
+            }
+            else
+                return Result.Error(MessageConstant.PARAMETER_ERROR);
+        }
+
+        /// <summary>
         /// 坐标签章
         /// </summary>
         /// <returns></returns>
@@ -413,6 +552,8 @@ namespace MultiPdfWebSocket
             {
                 if (IsOpenAFile())
                 {
+                    selfSignState = false;
+                    messageSignState = true;
                     string pages = Parameter[ProfileConstant.PARAMETER]["Pages"].ToString();
                     int.TryParse(Parameter[ProfileConstant.PARAMETER]["xCenter"].ToString(), out int xCenter);
                     int.TryParse(Parameter[ProfileConstant.PARAMETER]["yCenter"].ToString(), out int yCenter);
@@ -429,6 +570,36 @@ namespace MultiPdfWebSocket
         }
 
         /// <summary>
+        /// 关键字签章
+        /// </summary>
+        /// <param name="Parameter"></param>
+        /// <returns></returns>
+        private Result TZSignByKeyword3(JObject Parameter)
+        {
+            if (null != Parameter[ProfileConstant.PARAMETER]["Keyword"] &&
+                null != Parameter[ProfileConstant.PARAMETER]["Pages"] &&
+                null != Parameter[ProfileConstant.PARAMETER]["Indexes"])
+            {
+                if (IsOpenAFile())
+                {
+                    selfSignState = false;
+                    messageSignState = true;
+                    int ret = this.axPDFView1.TZSignByKeyword3(Parameter[ProfileConstant.PARAMETER]["Keyword"].ToString(),
+                        Parameter[ProfileConstant.PARAMETER]["Pages"].ToString(),
+                        Parameter[ProfileConstant.PARAMETER]["Indexes"].ToString());
+                    if (0 == ret)
+                        return Result.Success(MessageConstant.SIGN_BY_KEYWORD_SUCCESSFUL);
+                    else
+                        return Result.Error(MessageConstant.SIGN_BY_KEYWORD_FAILED);
+                }
+                else
+                    return Result.Error(MessageConstant.NO_OPEN_FILES);
+            }
+            else
+                return Result.Error(MessageConstant.PARAMETER_ERROR);
+        }
+
+        /// <summary>
         /// 获取印章的详细信息,用于无序签章
         /// </summary>
         /// <returns></returns>
@@ -436,9 +607,8 @@ namespace MultiPdfWebSocket
         {
             if (IsOpenAFile())
             {
-                // TODO  以下函数需要参数，需要进一步处理
-                // this.axPDFView1.GetRealSignatures()
-                return Result.Success("成功");
+                // 返回的为印章的详细信息，包括时间，坐标和签名值组成的xml文档的字符串，可以解析为xml文档对象进一步处理
+                return Result.Success(this.axPDFView1.GetRealSignatures(null));
             }
             else
                 return Result.Error(MessageConstant.GET_SEAL_INFO_FAILED);
@@ -485,10 +655,13 @@ namespace MultiPdfWebSocket
         /// <param name="e"></param>
         private void AxPDFView1_AfterSignPDF(object sender, EventArgs e)
         {
-            LogHelper.log.Info(userIpAddress + " => Executed signature operation");
-            string message = JsonConvert.SerializeObject(new Response(EventMessageConstant.AFTER_SIGN_PDF, Result.Success(MessageConstant.USER_SELF_SIGN)));
-            byte[] responseBytes = Encoding.UTF8.GetBytes(message);
-            websocket.SendAsync(new ArraySegment<byte>(responseBytes), WebSocketMessageType.Text, true, CancellationToken.None);
+            LogHelper.Info(userIpAddress + " => Executed signature operation");
+            if (selfSignState || messageSignState != true)
+            {
+                string message = JsonConvert.SerializeObject(new Response(EventMessageConstant.AFTER_SIGN_PDF, Result.Success(MessageConstant.USER_SELF_SIGN)));
+                byte[] responseBytes = Encoding.UTF8.GetBytes(message);
+                websocket.SendAsync(new ArraySegment<byte>(responseBytes), WebSocketMessageType.Text, true, CancellationToken.None);
+            }
             throw new NotImplementedException();
         }
     }
