@@ -29,8 +29,10 @@ namespace MultiPdfWebSocket
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.axPDFView1 = new AxPDFVIEWLib.AxPDFView();
+            this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.axPDFView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -43,11 +45,18 @@ namespace MultiPdfWebSocket
             this.axPDFView1.Size = new System.Drawing.Size(1174, 712);
             this.axPDFView1.TabIndex = 0;
             // 
+            // notifyIcon1
+            // 
+            this.notifyIcon1.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon1.Icon")));
+            this.notifyIcon1.Text = "MultiPdfWebSocket";
+            this.notifyIcon1.Visible = true;
+            this.notifyIcon1.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon1_MouseDoubleClick);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1184, 711);
+            this.ClientSize = new System.Drawing.Size(1180, 707);
             this.ControlBox = false;
             this.Controls.Add(this.axPDFView1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -66,6 +75,7 @@ namespace MultiPdfWebSocket
         #endregion
 
         public AxPDFVIEWLib.AxPDFView axPDFView1;
+        private System.Windows.Forms.NotifyIcon notifyIcon1;
     }
 }
 

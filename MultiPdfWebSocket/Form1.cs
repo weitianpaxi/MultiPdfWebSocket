@@ -48,6 +48,7 @@ namespace MultiPdfWebSocket
             LogInit();
             OcxInit();
             _ = this.Start();
+            HandleEventMessages();
         }
 
         /// <summary>
@@ -278,6 +279,11 @@ namespace MultiPdfWebSocket
         {
             this.axPDFView1.AfterOpenFile += AxPDFView1_AfterOpenFile;
             this.axPDFView1.AfterSignPDF += AxPDFView1_AfterSignPDF;
+            this.axPDFView1.AfterDelSignature += AxPDFView1_AfterDelSignature;
+            this.axPDFView1.ButtonedSign += AxPDFView1_ButtonedSign;
+            this.axPDFView1.ButtonedSignErr += AxPDFView1_ButtonedSignErr;
+            this.axPDFView1.OnSaveComment += AxPDFView1_OnSaveComment;
+            this.axPDFView1.OnmoveCacheSigComplete += AxPDFView1_OnmoveCacheSigComplete;
         }
 
         /// <summary>
@@ -661,8 +667,7 @@ namespace MultiPdfWebSocket
         /// <param name="Parameter"></param>
         /// <returns></returns>
         private Result GetUserSignCount(JObject Parameter)
-        {
-            
+        {      
             if (Parameter[ProfileConstant.PARAMETER]["CertCode"] != null)
             {
                 if (IsOpenAFile())
@@ -678,6 +683,16 @@ namespace MultiPdfWebSocket
         }
 
         /// <summary>
+        /// 向客户端发送消息
+        /// </summary>
+        /// <param name="message"></param>
+        void SendMessage(string message)
+        {
+            byte[] responseBytes = Encoding.UTF8.GetBytes(message);
+            websocket.SendAsync(new ArraySegment<byte>(responseBytes), WebSocketMessageType.Text, true, CancellationToken.None);
+        }
+
+        /// <summary>
         /// 打开文件完成消息处理
         /// </summary>
         /// <param name="sender"></param>
@@ -685,10 +700,8 @@ namespace MultiPdfWebSocket
         private void AxPDFView1_AfterOpenFile(object sender, EventArgs e)
         {
             LogHelper.Info(userIpAddress + " => opened the file");
-            string message = JsonConvert.SerializeObject(new Response(EventMessageConstant.AFTER_OPEN_FILE, 
-                Result.Success(MessageConstant.USER_SELF_OPEN_FILE)));
-            byte[] responseBytes = Encoding.UTF8.GetBytes(message);
-            websocket.SendAsync(new ArraySegment<byte>(responseBytes), WebSocketMessageType.Text, true, CancellationToken.None);
+            SendMessage(JsonConvert.SerializeObject(new Response(EventMessageConstant.AFTER_OPEN_FILE,
+                Result.Success(MessageConstant.USER_SELF_OPEN_FILE))));
             throw new NotImplementedException();
         }
 
@@ -701,13 +714,82 @@ namespace MultiPdfWebSocket
         {
             LogHelper.Info(userIpAddress + " => Executed signature operation");
             if (selfSignState || messageSignState != true)
-            {
-                string message = JsonConvert.SerializeObject(new Response(EventMessageConstant.AFTER_SIGN_PDF, 
-                    Result.Success(MessageConstant.USER_SELF_SIGN)));
-                byte[] responseBytes = Encoding.UTF8.GetBytes(message);
-                websocket.SendAsync(new ArraySegment<byte>(responseBytes), WebSocketMessageType.Text, true, CancellationToken.None);
-            }
+                SendMessage(JsonConvert.SerializeObject(new Response(EventMessageConstant.AFTER_SIGN_PDF, 
+                    Result.Success(MessageConstant.USER_SELF_SIGN))));
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 删除签章完成消息处理
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AxPDFView1_AfterDelSignature(object sender, EventArgs e)
+        {
+            SendMessage(JsonConvert.SerializeObject(new Response(EventMessageConstant.AFTER_DEL_SIGNATURE,
+                Result.Success(MessageConstant.DELETE_SIGNATURE_COMPLETED))));
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 点击电子签章按钮消息处理
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AxPDFView1_ButtonedSign(object sender, EventArgs e)
+        {
+            SendMessage(JsonConvert.SerializeObject(new Response(EventMessageConstant.BUTTONED_SIGN,
+                Result.Success(MessageConstant.USER_CLICKS_ON_THE_SIGNATURE_BUTTON))));
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 电子签章按钮执行失败消息处理
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AxPDFView1_ButtonedSignErr(object sender, EventArgs e)
+        {
+            SendMessage(JsonConvert.SerializeObject(new Response(EventMessageConstant.BUTTONED_SIGN_ERR,
+                Result.Success(MessageConstant.BUTTONED_SIGN_FAILED))));
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 打字机模式时点击对号消息处理
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AxPDFView1_OnSaveComment(object sender, EventArgs e)
+        {
+            SendMessage(JsonConvert.SerializeObject(new Response(EventMessageConstant.ON_SAVE_COMMENT,
+                Result.Success(MessageConstant.CLICK_ON_SAVE_COMMEN_BUTTON))));
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 印章拖动时单击鼠标确认消息处理
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AxPDFView1_OnmoveCacheSigComplete(object sender, EventArgs e)
+        {
+            SendMessage(JsonConvert.SerializeObject(new Response(EventMessageConstant.ON_MOVE_CACHE_SIG_COMPLETE,
+                Result.Success(MessageConstant.ON_MOVE_CACHE_SIG_COMPLETE))));
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 鼠标双击系统托盘图标响应事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            this.TopMost = true;
+            this.WindowState = FormWindowState.Normal;
+            // 窗口显示在屏幕中央
+            this.StartPosition = FormStartPosition.CenterScreen;
         }
     }
 }
