@@ -25,6 +25,36 @@ namespace MultiPdfWebSocket.Common
         /// </summary>
         public const string USER_SELF_SIGN = "用户自主签章完成";
 
+        /// <summary>
+        /// 打开文件完成事件提示信息
+        /// </summary>
+        public const string USER_SELF_OPEN_FILE = "打开文件完成";
+
+        /// <summary>
+        /// 删除签章完成事件提示信息
+        /// </summary>
+        public const string DELETE_SIGNATURE_COMPLETED = "删除签章完成";
+
+        /// <summary>
+        /// 用户点击电子签章按钮事件提示信息
+        /// </summary>
+        public const string USER_CLICKS_ON_THE_SIGNATURE_BUTTON = "用户点击电子签章按钮";
+
+        /// <summary>
+        /// 电子签章按钮执行失败事件提示信息
+        /// </summary>
+        public const string BUTTONED_SIGN_FAILED = "电子签章按钮执行失败";
+
+        /// <summary>
+        /// 打字机模式时点击对号事件提示信息
+        /// </summary>
+        public const string CLICK_ON_SAVE_COMMEN_BUTTON = "打字机模式时点击对号事件";
+
+        /// <summary>
+        /// 印章拖动时单击鼠标确认事件提示信息
+        /// </summary>
+        public const string ON_MOVE_CACHE_SIG_COMPLETE = "印章拖动时单击鼠标确认事件";
+
         /// 以下是正常函数操作的提示信息
 
         /// <summary>
