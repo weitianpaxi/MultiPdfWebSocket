@@ -56,7 +56,7 @@ namespace MultiPdfWebSocket
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1180, 707);
+            this.ClientSize = new System.Drawing.Size(1176, 703);
             this.ControlBox = false;
             this.Controls.Add(this.axPDFView1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
