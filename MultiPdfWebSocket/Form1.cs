@@ -811,9 +811,31 @@ namespace MultiPdfWebSocket
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void 隐藏插件ToolStripMenuItem1_Click(object sender, EventArgs e)
+        private void 隐藏插件ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.WindowState = FormWindowState.Minimized;
+        }
+
+        /// <summary>
+        /// 托盘菜单开启监听请求消息
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void 开始监听ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            停止监听ToolStripMenuItem.Checked = false;
+            _ = this.Start();
+        }
+
+        /// <summary>
+        /// 托盘菜单关闭监听请求消息
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void 停止监听ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            开始监听ToolStripMenuItem.Checked = false;
+            this.listener.Stop();
         }
 
         /// <summary>
