@@ -784,19 +784,6 @@ namespace MultiPdfWebSocket
         }
 
         /// <summary>
-        /// 鼠标单击系统托盘图标响应事件
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void NotifyIcon1_MouseClick(object sender, MouseEventArgs e)
-        {
-            this.TopMost = true;
-            this.WindowState = FormWindowState.Normal;
-            // 窗口显示在屏幕中央
-            this.StartPosition = FormStartPosition.CenterScreen;
-        }
-
-        /// <summary>
         /// 鼠标双击系统托盘图标响应事件
         /// </summary>
         /// <param name="sender"></param>
