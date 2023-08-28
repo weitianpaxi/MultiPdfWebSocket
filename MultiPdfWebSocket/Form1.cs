@@ -31,6 +31,10 @@ namespace MultiPdfWebSocket
         /// </summary>        
         private WebSocket websocket;
         /// <summary>
+        /// 服务器监听对象
+        /// </summary>
+        private HttpListener listener;
+        /// <summary>
         /// 连接客户端地址
         /// </summary>        
         private string userIpAddress;
@@ -94,7 +98,7 @@ namespace MultiPdfWebSocket
         /// <returns></returns>
         public async Task Start()
         {
-            HttpListener listener = new HttpListener();
+            listener = new HttpListener();
             listener.Prefixes.Add(ProfileConstant.LISTENER_URL);
             listener.Start();
 
@@ -780,16 +784,60 @@ namespace MultiPdfWebSocket
         }
 
         /// <summary>
-        /// 鼠标双击系统托盘图标响应事件
+        /// 鼠标单击系统托盘图标响应事件
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
+        private void NotifyIcon1_MouseClick(object sender, MouseEventArgs e)
         {
             this.TopMost = true;
             this.WindowState = FormWindowState.Normal;
             // 窗口显示在屏幕中央
             this.StartPosition = FormStartPosition.CenterScreen;
+        }
+
+        /// <summary>
+        /// 鼠标双击系统托盘图标响应事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void NotifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            this.WindowState = FormWindowState.Minimized;
+        }
+
+        /// <summary>
+        /// 托盘菜单显示PDF插件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void 显示插件ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.TopMost = true;
+            this.WindowState = FormWindowState.Normal;
+            // 窗口显示在屏幕中央
+            this.StartPosition = FormStartPosition.CenterScreen;
+        }
+
+        /// <summary>
+        /// 托盘菜单隐藏PDF插件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void 隐藏插件ToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            this.WindowState = FormWindowState.Minimized;
+        }
+
+        /// <summary>
+        /// 托盘菜单退出服务
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void 退出服务ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.listener.Close();
+            this.Close();
         }
     }
 }
