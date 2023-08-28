@@ -22,17 +22,37 @@ namespace MultiPdfWebSocket
 {
     public partial class Form1 : Form
     {
-        private const int BufferSize = ProfileConstant.REQUEST_SIZE;    // 消息体默认大小
-        private WebSocket websocket;                    // 服务器对象
-        private string userIpAddress;                   // 连接客户端地址
-        private Boolean selfSignState = true;           // 用户自主签章状态
-        private Boolean messageSignState = false;       // 消息体签章状态
+        /// <summary>
+        /// 消息体默认大小
+        /// </summary>        
+        private const int BufferSize = ProfileConstant.REQUEST_SIZE;
+        /// <summary>
+        /// 服务器对象
+        /// </summary>        
+        private WebSocket websocket;
+        /// <summary>
+        /// 服务器监听对象
+        /// </summary>
+        private HttpListener listener;
+        /// <summary>
+        /// 连接客户端地址
+        /// </summary>        
+        private string userIpAddress;
+        /// <summary>
+        /// 用户自主签章状态
+        /// </summary>
+        private Boolean selfSignState = true;
+        /// <summary>
+        /// 消息体签章状态
+        /// </summary>
+        private Boolean messageSignState = false;       
         public Form1()
         {
             InitializeComponent();
             LogInit();
             OcxInit();
             _ = this.Start();
+            HandleEventMessages();
         }
 
         /// <summary>
@@ -41,8 +61,7 @@ namespace MultiPdfWebSocket
         private void OcxInit()
         {
             this.axPDFView1.SetRCPath(ProfileConstant.RC_PATH);
-            this.axPDFView1.SetCaType(0);
-            this.axPDFView1.AfterSignPDF += AxPDFView1_AfterSignPDF;
+            this.axPDFView1.SetCaType(ProfileConstant.CA_TYPE);
         }
 
         /// <summary>
@@ -50,9 +69,9 @@ namespace MultiPdfWebSocket
         /// </summary>
         private void LogInit()
         {
-            //读取XML配置信息
+            // 读取XML配置信息
             XMLHelper.ReadXml();
-            //日志清除
+            // 日志清除
             Task.Factory.StartNew(() =>
             {
                 DirectoryInfo di = new DirectoryInfo(LogParameter.LogFilePath);
@@ -79,7 +98,7 @@ namespace MultiPdfWebSocket
         /// <returns></returns>
         public async Task Start()
         {
-            HttpListener listener = new HttpListener();
+            listener = new HttpListener();
             listener.Prefixes.Add(ProfileConstant.LISTENER_URL);
             listener.Start();
 
@@ -106,8 +125,8 @@ namespace MultiPdfWebSocket
             {
                 websocketContext = await context.AcceptWebSocketAsync(subProtocol: null);
                 websocket = websocketContext.WebSocket;
-
-                userIpAddress = context.Request.UserHostAddress;    // 记录客户端请求IP
+                // 记录客户端请求IP
+                userIpAddress = context.Request.UserHostAddress;    
                 LogHelper.Info("WebSocket client " + userIpAddress + " connected.");
                 
                 await ReceiveLoop();
@@ -153,16 +172,17 @@ namespace MultiPdfWebSocket
         /// <returns></returns>
         private async Task ProcessMessage(byte[] buffer, int length)
         {
-            string responseMessage = "";            // 定义返回消息
-            //this.TopMost = true;
-            // 处理接收到的消息
-            string resultMessage = Encoding.UTF8.GetString(buffer, 0, length);                          // 转换接受到的数据编码格式 
+            // 定义返回消息
+            string responseMessage = "";
+            // 转换接受到的数据编码格式 
+            string resultMessage = Encoding.UTF8.GetString(buffer, 0, length);                          
             if (resultMessage == null || resultMessage == "")
                 responseMessage = MessageConstant.PARAMETER_ERROR;
             else
             {
-                var json_resultMessage = JsonConvert.DeserializeObject<JObject>(resultMessage);         // json数据序列化
-                LogHelper.Info("json数据序列化为：" + json_resultMessage.ToString());
+                // json数据序列化
+                var json_resultMessage = JsonConvert.DeserializeObject<JObject>(resultMessage);         
+                LogHelper.Info("JSON data serialization as：" + json_resultMessage.ToString());
                 if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.SHOW_PDF_SERVICE))
                 {
                     responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.SHOW_PDF_SERVICE,
@@ -226,13 +246,14 @@ namespace MultiPdfWebSocket
                 {
                     responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.TZ_SIGN_BY_POS_3, 
                         TZSignByPos3(json_resultMessage)));
-                    selfSignState = true;    // 更新用户自主签章状态
+                    // 更新用户自主签章状态
+                    selfSignState = true;    
                 }
                 if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.TZ_SIGN_BY_KEYWORD_3))
                 {
                     responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.TZ_SIGN_BY_KEYWORD_3,
                         TZSignByKeyword3(json_resultMessage)));
-                    selfSignState = true;    // 更新用户自主签章状态
+                    selfSignState = true;    
                 }
                 if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.GET_REAL_SIGNATURES))
                 {
@@ -249,11 +270,24 @@ namespace MultiPdfWebSocket
                     responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.TZ_GET_USER_SIGN_COUNT,
                         GetUserSignCount(json_resultMessage)));
                 }
-            }
-            
+            } 
             // 发送回执消息
             byte[] responseBytes = Encoding.UTF8.GetBytes(responseMessage);
             await websocket.SendAsync(new ArraySegment<byte>(responseBytes), WebSocketMessageType.Text, true, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// 处理事件消息
+        /// </summary>
+        private void HandleEventMessages()
+        {
+            this.axPDFView1.AfterOpenFile += AxPDFView1_AfterOpenFile;
+            this.axPDFView1.AfterSignPDF += AxPDFView1_AfterSignPDF;
+            this.axPDFView1.AfterDelSignature += AxPDFView1_AfterDelSignature;
+            this.axPDFView1.ButtonedSign += AxPDFView1_ButtonedSign;
+            this.axPDFView1.ButtonedSignErr += AxPDFView1_ButtonedSignErr;
+            this.axPDFView1.OnSaveComment += AxPDFView1_OnSaveComment;
+            this.axPDFView1.OnmoveCacheSigComplete += AxPDFView1_OnmoveCacheSigComplete;
         }
 
         /// <summary>
@@ -282,15 +316,20 @@ namespace MultiPdfWebSocket
                     if (Parameter[ProfileConstant.PARAMETER]["height"] != null)
                         int.TryParse(Parameter[ProfileConstant.PARAMETER]["height"].ToString(), out height);
                     this.WindowState = FormWindowState.Normal;
-                    this.Location = new Point(posX, posY);                      // 设置窗口的位置
-                    this.Size = new Size(width, height);                        // 设置窗口的大小
-                    this.axPDFView1.Location = new Point(0, 0);                 // 位置更新后设置控件相对位置
-                    this.axPDFView1.Size = new Size(width, height);             // 保证控件随外框大小变化
+                    // 设置窗口的位置
+                    this.Location = new Point(posX, posY);
+                    // 设置窗口的大小
+                    this.Size = new Size(width, height);
+                    // 位置更新后设置控件相对位置
+                    this.axPDFView1.Location = new Point(0, 0);
+                    // 保证控件随外框大小变化
+                    this.axPDFView1.Size = new Size(width, height);             
                 }
                 else
                 {
                     this.WindowState = FormWindowState.Normal;
-                    this.StartPosition = FormStartPosition.CenterScreen;        // 窗口显示在屏幕中央
+                    // 窗口显示在屏幕中央
+                    this.StartPosition = FormStartPosition.CenterScreen;        
                 }
                 return Result.Success(MessageConstant.SHOWPDFSERVICE_SUCCESSFUL);
             }
@@ -320,12 +359,12 @@ namespace MultiPdfWebSocket
             {
                 if ((bool)Parameter[ProfileConstant.PARAMETER]["IsEnable"])
                 {
-                    DealEnableToolBarButton(Parameter);
+                    HandleEnableToolBarButton(Parameter);
                     return Result.Success(MessageConstant.TOOLBAR_BUTTON_DISPLAY_SUCCESSFUL);
                 }
                 else
                 {
-                    DealEnableToolBarButton(Parameter);
+                    HandleEnableToolBarButton(Parameter);
                     return Result.Success(MessageConstant.TOOLBAR_BUTTON_HIDDEN_SUCCESSFUL);
                 }
             }
@@ -337,7 +376,7 @@ namespace MultiPdfWebSocket
         /// 隐藏ToolBarButton具体实现
         /// </summary>
         /// <param name="Parameter"></param>
-        private void DealEnableToolBarButton(JObject Parameter)
+        private void HandleEnableToolBarButton(JObject Parameter)
         {
             if (Parameter[ProfileConstant.PARAMETER]["ButtonId"].ToString().Length > 1)
             {
@@ -363,8 +402,8 @@ namespace MultiPdfWebSocket
         private Result OpenPdf()
         {
             int ret = this.axPDFView1.SNCAOpenPdf();
-            if (ret == 0)
-                return Result.Success(DealGetFilePath());
+            if (0 == ret)
+                return Result.Success(HandleGetFilePath());
             else
                 return Result.Error(MessageConstant.OPEN_FILE_FAILED);
         }
@@ -373,7 +412,7 @@ namespace MultiPdfWebSocket
         /// 获取当前打开文档的全路径
         /// </summary>
         /// <returns></returns>
-        private string DealGetFilePath()
+        private string HandleGetFilePath()
         {
             return this.axPDFView1.GetFilePath();
         }
@@ -391,7 +430,7 @@ namespace MultiPdfWebSocket
                 int.TryParse(Parameter[ProfileConstant.PARAMETER]["Type"].ToString(), out int type);
                 string path = Parameter[ProfileConstant.PARAMETER]["Path"].ToString();
                 if (this.axPDFView1.SNCAOpenPdfByPath(path, type) == 0)
-                    return Result.Success(DealGetFilePath());
+                    return Result.Success(HandleGetFilePath());
                 else
                     return Result.Error(MessageConstant.OPEN_FILE_FAILED);
             }
@@ -405,7 +444,7 @@ namespace MultiPdfWebSocket
         /// <returns></returns>
         private Boolean IsOpenAFile()
         {
-            string filePath = DealGetFilePath();
+            string filePath = HandleGetFilePath();
             if (filePath != null && filePath != "")
                 return true;
             else
@@ -419,7 +458,7 @@ namespace MultiPdfWebSocket
         private Result GetFilePath()
         {
             if (IsOpenAFile())
-                return Result.Success(DealGetFilePath());
+                return Result.Success(HandleGetFilePath());
             else
                 return Result.Error(MessageConstant.NO_OPEN_FILES);
         }
@@ -576,9 +615,9 @@ namespace MultiPdfWebSocket
         /// <returns></returns>
         private Result TZSignByKeyword3(JObject Parameter)
         {
-            if (null != Parameter[ProfileConstant.PARAMETER]["Keyword"] &&
-                null != Parameter[ProfileConstant.PARAMETER]["Pages"] &&
-                null != Parameter[ProfileConstant.PARAMETER]["Indexes"])
+            if (Parameter[ProfileConstant.PARAMETER]["Keyword"] != null &&
+                Parameter[ProfileConstant.PARAMETER]["Pages"] != null &&
+                Parameter[ProfileConstant.PARAMETER]["Indexes"] != null)
             {
                 if (IsOpenAFile())
                 {
@@ -632,8 +671,7 @@ namespace MultiPdfWebSocket
         /// <param name="Parameter"></param>
         /// <returns></returns>
         private Result GetUserSignCount(JObject Parameter)
-        {
-            
+        {      
             if (Parameter[ProfileConstant.PARAMETER]["CertCode"] != null)
             {
                 if (IsOpenAFile())
@@ -649,6 +687,29 @@ namespace MultiPdfWebSocket
         }
 
         /// <summary>
+        /// 向客户端发送消息
+        /// </summary>
+        /// <param name="message"></param>
+        void SendMessage(string message)
+        {
+            byte[] responseBytes = Encoding.UTF8.GetBytes(message);
+            websocket.SendAsync(new ArraySegment<byte>(responseBytes), WebSocketMessageType.Text, true, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// 打开文件完成消息处理
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AxPDFView1_AfterOpenFile(object sender, EventArgs e)
+        {
+            LogHelper.Info(userIpAddress + " => opened the file");
+            SendMessage(JsonConvert.SerializeObject(new Response(EventMessageConstant.AFTER_OPEN_FILE,
+                Result.Success(MessageConstant.USER_SELF_OPEN_FILE))));
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
         /// 签章结束消息处理
         /// </summary>
         /// <param name="sender"></param>
@@ -657,12 +718,135 @@ namespace MultiPdfWebSocket
         {
             LogHelper.Info(userIpAddress + " => Executed signature operation");
             if (selfSignState || messageSignState != true)
-            {
-                string message = JsonConvert.SerializeObject(new Response(EventMessageConstant.AFTER_SIGN_PDF, Result.Success(MessageConstant.USER_SELF_SIGN)));
-                byte[] responseBytes = Encoding.UTF8.GetBytes(message);
-                websocket.SendAsync(new ArraySegment<byte>(responseBytes), WebSocketMessageType.Text, true, CancellationToken.None);
-            }
+                SendMessage(JsonConvert.SerializeObject(new Response(EventMessageConstant.AFTER_SIGN_PDF, 
+                    Result.Success(MessageConstant.USER_SELF_SIGN))));
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 删除签章完成消息处理
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AxPDFView1_AfterDelSignature(object sender, EventArgs e)
+        {
+            SendMessage(JsonConvert.SerializeObject(new Response(EventMessageConstant.AFTER_DEL_SIGNATURE,
+                Result.Success(MessageConstant.DELETE_SIGNATURE_COMPLETED))));
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 点击电子签章按钮消息处理
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AxPDFView1_ButtonedSign(object sender, EventArgs e)
+        {
+            SendMessage(JsonConvert.SerializeObject(new Response(EventMessageConstant.BUTTONED_SIGN,
+                Result.Success(MessageConstant.USER_CLICKS_ON_THE_SIGNATURE_BUTTON))));
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 电子签章按钮执行失败消息处理
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AxPDFView1_ButtonedSignErr(object sender, EventArgs e)
+        {
+            SendMessage(JsonConvert.SerializeObject(new Response(EventMessageConstant.BUTTONED_SIGN_ERR,
+                Result.Success(MessageConstant.BUTTONED_SIGN_FAILED))));
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 打字机模式时点击对号消息处理
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AxPDFView1_OnSaveComment(object sender, EventArgs e)
+        {
+            SendMessage(JsonConvert.SerializeObject(new Response(EventMessageConstant.ON_SAVE_COMMENT,
+                Result.Success(MessageConstant.CLICK_ON_SAVE_COMMEN_BUTTON))));
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 印章拖动时单击鼠标确认消息处理
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AxPDFView1_OnmoveCacheSigComplete(object sender, EventArgs e)
+        {
+            SendMessage(JsonConvert.SerializeObject(new Response(EventMessageConstant.ON_MOVE_CACHE_SIG_COMPLETE,
+                Result.Success(MessageConstant.ON_MOVE_CACHE_SIG_COMPLETE))));
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 鼠标双击系统托盘图标响应事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void NotifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            this.WindowState = FormWindowState.Minimized;
+        }
+
+        /// <summary>
+        /// 托盘菜单显示PDF插件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void 显示插件ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.TopMost = true;
+            this.WindowState = FormWindowState.Normal;
+            // 窗口显示在屏幕中央
+            this.StartPosition = FormStartPosition.CenterScreen;
+        }
+
+        /// <summary>
+        /// 托盘菜单隐藏PDF插件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void 隐藏插件ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.WindowState = FormWindowState.Minimized;
+        }
+
+        /// <summary>
+        /// 托盘菜单开启监听请求消息
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void 开始监听ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            停止监听ToolStripMenuItem.Checked = false;
+            _ = this.Start();
+        }
+
+        /// <summary>
+        /// 托盘菜单关闭监听请求消息
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void 停止监听ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            开始监听ToolStripMenuItem.Checked = false;
+            this.listener.Close();
+        }
+
+        /// <summary>
+        /// 托盘菜单退出服务
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void 退出服务ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.listener.Close();
+            this.Close();
         }
     }
 }

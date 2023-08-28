@@ -22,11 +22,11 @@ namespace MultiPdfWebSocket.Utility
                 LogParameter.LogFilePath = node.SelectSingleNode("LogFilePath").InnerText;
                 LogParameter.LogFileExistDay = int.Parse(node.SelectSingleNode("LogFileExistDay").InnerText);
 
-                LogHelper.Debug("配置文件读取成功。");
+                LogHelper.Debug("Configuration file read successfully.");
             }
             catch (Exception ex)
             {
-                LogHelper.log.Error(string.Format("XML文件读取失败。{0}", ex));
+                LogHelper.log.Error(string.Format("XML file read failure. {0}", ex));
             }
         }
     }
