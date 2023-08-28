@@ -51,8 +51,9 @@ namespace MultiPdfWebSocket
             InitializeComponent();
             LogInit();
             OcxInit();
-            _ = this.Start();
+            _ = Start();
             HandleEventMessages();
+            StartPosition = FormStartPosition.CenterScreen;
         }
 
         /// <summary>
@@ -60,8 +61,8 @@ namespace MultiPdfWebSocket
         /// </summary>
         private void OcxInit()
         {
-            this.axPDFView1.SetRCPath(ProfileConstant.RC_PATH);
-            this.axPDFView1.SetCaType(ProfileConstant.CA_TYPE);
+            axPDFView1.SetRCPath(ProfileConstant.RC_PATH);
+            axPDFView1.SetCaType(ProfileConstant.CA_TYPE);
         }
 
         /// <summary>
@@ -281,13 +282,13 @@ namespace MultiPdfWebSocket
         /// </summary>
         private void HandleEventMessages()
         {
-            this.axPDFView1.AfterOpenFile += AxPDFView1_AfterOpenFile;
-            this.axPDFView1.AfterSignPDF += AxPDFView1_AfterSignPDF;
-            this.axPDFView1.AfterDelSignature += AxPDFView1_AfterDelSignature;
-            this.axPDFView1.ButtonedSign += AxPDFView1_ButtonedSign;
-            this.axPDFView1.ButtonedSignErr += AxPDFView1_ButtonedSignErr;
-            this.axPDFView1.OnSaveComment += AxPDFView1_OnSaveComment;
-            this.axPDFView1.OnmoveCacheSigComplete += AxPDFView1_OnmoveCacheSigComplete;
+            axPDFView1.AfterOpenFile += AxPDFView1_AfterOpenFile;
+            axPDFView1.AfterSignPDF += AxPDFView1_AfterSignPDF;
+            axPDFView1.AfterDelSignature += AxPDFView1_AfterDelSignature;
+            axPDFView1.ButtonedSign += AxPDFView1_ButtonedSign;
+            axPDFView1.ButtonedSignErr += AxPDFView1_ButtonedSignErr;
+            axPDFView1.OnSaveComment += AxPDFView1_OnSaveComment;
+            axPDFView1.OnmoveCacheSigComplete += AxPDFView1_OnmoveCacheSigComplete;
         }
 
         /// <summary>
@@ -299,10 +300,11 @@ namespace MultiPdfWebSocket
         {
             if (Parameter[ProfileConstant.PARAMETER]["TopMost"] != null)
             {
+                Visible = true;
                 if ((bool)Parameter[ProfileConstant.PARAMETER]["TopMost"])
-                    this.TopMost = true;
+                    TopMost = true;
                 else
-                    this.TopMost = false;
+                    TopMost = false;
                 if (Parameter[ProfileConstant.PARAMETER].ToList().Count > 1)
                 {
                     int posX = ProfileConstant.DEFAULT_POS_X, posY = ProfileConstant.DEFAULT_POS_Y;
@@ -315,21 +317,21 @@ namespace MultiPdfWebSocket
                         int.TryParse(Parameter[ProfileConstant.PARAMETER]["width"].ToString(), out width);
                     if (Parameter[ProfileConstant.PARAMETER]["height"] != null)
                         int.TryParse(Parameter[ProfileConstant.PARAMETER]["height"].ToString(), out height);
-                    this.WindowState = FormWindowState.Normal;
+                    WindowState = FormWindowState.Normal;
                     // 设置窗口的位置
-                    this.Location = new Point(posX, posY);
+                    Location = new Point(posX, posY);
                     // 设置窗口的大小
-                    this.Size = new Size(width, height);
+                    Size = new Size(width, height);
                     // 位置更新后设置控件相对位置
-                    this.axPDFView1.Location = new Point(0, 0);
+                    axPDFView1.Location = new Point(0, 0);
                     // 保证控件随外框大小变化
-                    this.axPDFView1.Size = new Size(width, height);             
+                    axPDFView1.Size = new Size(width, height);             
                 }
                 else
                 {
-                    this.WindowState = FormWindowState.Normal;
+                    WindowState = FormWindowState.Normal;
                     // 窗口显示在屏幕中央
-                    this.StartPosition = FormStartPosition.CenterScreen;        
+                    StartPosition = FormStartPosition.CenterScreen;        
                 }
                 return Result.Success(MessageConstant.SHOWPDFSERVICE_SUCCESSFUL);
             }
@@ -343,7 +345,8 @@ namespace MultiPdfWebSocket
         /// <returns></returns>
         private Result ClosePdfService()
         {
-            this.WindowState = FormWindowState.Minimized;
+            Visible = false;
+            WindowState = FormWindowState.Minimized;
             return Result.Success(MessageConstant.CLOSEPDFSERVICE_SUCCESSFUL);
         }
 
@@ -384,13 +387,13 @@ namespace MultiPdfWebSocket
                 foreach (string strButtonId in strButtonIdArray)
                 {
                     int.TryParse(strButtonId, out int tempButtonId);
-                    this.axPDFView1.EnableToolBarButton(tempButtonId, (bool)Parameter[ProfileConstant.PARAMETER]["IsEnable"]);
+                    axPDFView1.EnableToolBarButton(tempButtonId, (bool)Parameter[ProfileConstant.PARAMETER]["IsEnable"]);
                 }
             }
             else
             {
                 int.TryParse(Parameter[ProfileConstant.PARAMETER]["ButtonId"].ToString(), out int buttonId);
-                this.axPDFView1.EnableToolBarButton(buttonId, (bool)Parameter[ProfileConstant.PARAMETER]["IsEnable"]);
+                axPDFView1.EnableToolBarButton(buttonId, (bool)Parameter[ProfileConstant.PARAMETER]["IsEnable"]);
             }
         }
 
@@ -401,7 +404,7 @@ namespace MultiPdfWebSocket
         /// <returns></returns>
         private Result OpenPdf()
         {
-            int ret = this.axPDFView1.SNCAOpenPdf();
+            int ret = axPDFView1.SNCAOpenPdf();
             if (0 == ret)
                 return Result.Success(HandleGetFilePath());
             else
@@ -414,7 +417,7 @@ namespace MultiPdfWebSocket
         /// <returns></returns>
         private string HandleGetFilePath()
         {
-            return this.axPDFView1.GetFilePath();
+            return axPDFView1.GetFilePath();
         }
 
         /// <summary>
@@ -429,7 +432,7 @@ namespace MultiPdfWebSocket
             {
                 int.TryParse(Parameter[ProfileConstant.PARAMETER]["Type"].ToString(), out int type);
                 string path = Parameter[ProfileConstant.PARAMETER]["Path"].ToString();
-                if (this.axPDFView1.SNCAOpenPdfByPath(path, type) == 0)
+                if (axPDFView1.SNCAOpenPdfByPath(path, type) == 0)
                     return Result.Success(HandleGetFilePath());
                 else
                     return Result.Error(MessageConstant.OPEN_FILE_FAILED);
@@ -471,7 +474,7 @@ namespace MultiPdfWebSocket
         {
             if (IsOpenAFile())
             {
-                this.axPDFView1.PrintFile();
+                axPDFView1.PrintFile();
                 return Result.Success(MessageConstant.FILE_PRINTED_SUCCESSFULLY);
             }
             else
@@ -486,7 +489,7 @@ namespace MultiPdfWebSocket
         {
             if (IsOpenAFile())
             {
-                this.axPDFView1.CloseFile();
+                axPDFView1.CloseFile();
                 return Result.Success(MessageConstant.CLOSE_FILE_SUCCESSFUL);
             }
             else
@@ -504,7 +507,7 @@ namespace MultiPdfWebSocket
                 Parameter[ProfileConstant.PARAMETER]["IsReplace"] != null)
             {
                 int.TryParse(Parameter[ProfileConstant.PARAMETER]["IsReplace"].ToString(), out int IsReplace);
-                if (this.axPDFView1.SaveAs(Parameter[ProfileConstant.PARAMETER]["FilePath"].ToString(), IsReplace) == 1)
+                if (axPDFView1.SaveAs(Parameter[ProfileConstant.PARAMETER]["FilePath"].ToString(), IsReplace) == 1)
                     return Result.Success(MessageConstant.SAVE_AS_FILE_SUCCESSFUL);
                 else
                     return Result.Error(MessageConstant.SAVE_AS_FILE_FAILED);
@@ -520,7 +523,7 @@ namespace MultiPdfWebSocket
         private Result GetPageCounts()
         {
             if (IsOpenAFile())
-                return Result.Success(this.axPDFView1.GetPageCounts().ToString());
+                return Result.Success(axPDFView1.GetPageCounts().ToString());
             else
                 return Result.Error(MessageConstant.NO_OPEN_FILES);
         }
@@ -532,7 +535,7 @@ namespace MultiPdfWebSocket
         private Result GetCurPageNo()
         {
             if (IsOpenAFile())
-                return Result.Success(this.axPDFView1.GetCurPageNo().ToString());
+                return Result.Success(axPDFView1.GetCurPageNo().ToString());
             else
                 return Result.Error(MessageConstant.NO_OPEN_FILES);
         }
@@ -548,7 +551,7 @@ namespace MultiPdfWebSocket
                 if (IsOpenAFile())
                 {
                     int.TryParse(Parameter[ProfileConstant.PARAMETER]["PageIndex"].ToString(), out int pageIndex);
-                    this.axPDFView1.TZGoToPage(pageIndex);
+                    axPDFView1.TZGoToPage(pageIndex);
                     return Result.Success(MessageConstant.GOTO_PAGE_SUCCESSFUL);
                 }
                 else
@@ -569,7 +572,7 @@ namespace MultiPdfWebSocket
             {
                 if (IsOpenAFile())
                 {
-                    this.axPDFView1.GoToBookMarkByBookMarkName(Parameter[ProfileConstant.PARAMETER]["BookMarkName"].ToString());
+                    axPDFView1.GoToBookMarkByBookMarkName(Parameter[ProfileConstant.PARAMETER]["BookMarkName"].ToString());
                     return Result.Success(MessageConstant.GOTO_BOOKMARK_SUCCESSFUL);
                 }
                 else
@@ -596,7 +599,7 @@ namespace MultiPdfWebSocket
                     string pages = Parameter[ProfileConstant.PARAMETER]["Pages"].ToString();
                     int.TryParse(Parameter[ProfileConstant.PARAMETER]["xCenter"].ToString(), out int xCenter);
                     int.TryParse(Parameter[ProfileConstant.PARAMETER]["yCenter"].ToString(), out int yCenter);
-                    if (this.axPDFView1.TZSignByPos3(pages, xCenter, yCenter) == 0)
+                    if (axPDFView1.TZSignByPos3(pages, xCenter, yCenter) == 0)
                         return Result.Success(MessageConstant.SIGN_BY_POS_SUCCESSFUL);
                     else
                         return Result.Error(MessageConstant.SIGN_BY_POS_FAILED);
@@ -623,7 +626,7 @@ namespace MultiPdfWebSocket
                 {
                     selfSignState = false;
                     messageSignState = true;
-                    int ret = this.axPDFView1.TZSignByKeyword3(Parameter[ProfileConstant.PARAMETER]["Keyword"].ToString(),
+                    int ret = axPDFView1.TZSignByKeyword3(Parameter[ProfileConstant.PARAMETER]["Keyword"].ToString(),
                         Parameter[ProfileConstant.PARAMETER]["Pages"].ToString(),
                         Parameter[ProfileConstant.PARAMETER]["Indexes"].ToString());
                     if (0 == ret)
@@ -647,7 +650,7 @@ namespace MultiPdfWebSocket
             if (IsOpenAFile())
             {
                 // 返回的为印章的详细信息，包括时间，坐标和签名值组成的xml文档的字符串，可以解析为xml文档对象进一步处理
-                return Result.Success(this.axPDFView1.GetRealSignatures(null));
+                return Result.Success(axPDFView1.GetRealSignatures(null));
             }
             else
                 return Result.Error(MessageConstant.GET_SEAL_INFO_FAILED);
@@ -660,7 +663,7 @@ namespace MultiPdfWebSocket
         private Result GetCurrentSignatureCount()
         {
             if (IsOpenAFile())
-                return Result.Success(this.axPDFView1.GetCurrentSignatureCount().ToString());
+                return Result.Success(axPDFView1.GetCurrentSignatureCount().ToString());
             else
                 return Result.Error(MessageConstant.GET_SEAL_NUMBER_FAILED);
         }
@@ -677,7 +680,7 @@ namespace MultiPdfWebSocket
                 if (IsOpenAFile())
                 {
                     string CertCode = Parameter[ProfileConstant.PARAMETER]["CertCode"].ToString();
-                    return Result.Success(this.axPDFView1.TZGetUserSignCount(CertCode).ToString());
+                    return Result.Success(axPDFView1.TZGetUserSignCount(CertCode).ToString());
                 }
                 else
                     return Result.Error(MessageConstant.GET_SEAL_NUMBER_FAILED);
@@ -790,7 +793,8 @@ namespace MultiPdfWebSocket
         /// <param name="e"></param>
         private void NotifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            this.WindowState = FormWindowState.Minimized;
+            Visible = true;
+            WindowState = FormWindowState.Normal;
         }
 
         /// <summary>
@@ -800,10 +804,9 @@ namespace MultiPdfWebSocket
         /// <param name="e"></param>
         private void 显示插件ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.TopMost = true;
-            this.WindowState = FormWindowState.Normal;
-            // 窗口显示在屏幕中央
-            this.StartPosition = FormStartPosition.CenterScreen;
+            Visible = true;
+            TopMost = true;
+            WindowState = FormWindowState.Normal;
         }
 
         /// <summary>
@@ -813,7 +816,8 @@ namespace MultiPdfWebSocket
         /// <param name="e"></param>
         private void 隐藏插件ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.WindowState = FormWindowState.Minimized;
+            Visible = false;
+            WindowState = FormWindowState.Minimized;
         }
 
         /// <summary>
@@ -824,7 +828,7 @@ namespace MultiPdfWebSocket
         private void 开始监听ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             停止监听ToolStripMenuItem.Checked = false;
-            _ = this.Start();
+            _ = Start();
         }
 
         /// <summary>
@@ -835,7 +839,7 @@ namespace MultiPdfWebSocket
         private void 停止监听ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             开始监听ToolStripMenuItem.Checked = false;
-            this.listener.Close();
+            listener.Close();
         }
 
         /// <summary>
@@ -845,8 +849,8 @@ namespace MultiPdfWebSocket
         /// <param name="e"></param>
         private void 退出服务ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.listener.Close();
-            this.Close();
+            listener.Close();
+            Close();
         }
     }
 }
