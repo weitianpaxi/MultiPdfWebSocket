@@ -835,7 +835,7 @@ namespace MultiPdfWebSocket
         private void 停止监听ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             开始监听ToolStripMenuItem.Checked = false;
-            this.listener.Stop();
+            this.listener.Close();
         }
 
         /// <summary>
