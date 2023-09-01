@@ -36,9 +36,8 @@ namespace MultiPdfWebSocket
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.显示插件ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.隐藏插件ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.退出服务ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.开始监听ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.停止监听ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.退出服务ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.axPDFView1)).BeginInit();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -65,10 +64,9 @@ namespace MultiPdfWebSocket
             this.显示插件ToolStripMenuItem,
             this.隐藏插件ToolStripMenuItem,
             this.开始监听ToolStripMenuItem,
-            this.停止监听ToolStripMenuItem,
             this.退出服务ToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(181, 136);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(181, 114);
             // 
             // 显示插件ToolStripMenuItem
             // 
@@ -84,13 +82,6 @@ namespace MultiPdfWebSocket
             this.隐藏插件ToolStripMenuItem.Text = "隐藏插件";
             this.隐藏插件ToolStripMenuItem.Click += new System.EventHandler(this.隐藏插件ToolStripMenuItem_Click);
             // 
-            // 退出服务ToolStripMenuItem
-            // 
-            this.退出服务ToolStripMenuItem.Name = "退出服务ToolStripMenuItem";
-            this.退出服务ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.退出服务ToolStripMenuItem.Text = "退出服务";
-            this.退出服务ToolStripMenuItem.Click += new System.EventHandler(this.退出服务ToolStripMenuItem_Click);
-            // 
             // 开始监听ToolStripMenuItem
             // 
             this.开始监听ToolStripMenuItem.Checked = true;
@@ -101,19 +92,18 @@ namespace MultiPdfWebSocket
             this.开始监听ToolStripMenuItem.Text = "开始监听";
             this.开始监听ToolStripMenuItem.Click += new System.EventHandler(this.开始监听ToolStripMenuItem_Click);
             // 
-            // 停止监听ToolStripMenuItem
+            // 退出服务ToolStripMenuItem
             // 
-            this.停止监听ToolStripMenuItem.CheckOnClick = true;
-            this.停止监听ToolStripMenuItem.Name = "停止监听ToolStripMenuItem";
-            this.停止监听ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.停止监听ToolStripMenuItem.Text = "停止监听";
-            this.停止监听ToolStripMenuItem.Click += new System.EventHandler(this.停止监听ToolStripMenuItem_Click);
+            this.退出服务ToolStripMenuItem.Name = "退出服务ToolStripMenuItem";
+            this.退出服务ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.退出服务ToolStripMenuItem.Text = "退出服务";
+            this.退出服务ToolStripMenuItem.Click += new System.EventHandler(this.退出服务ToolStripMenuItem_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1180, 707);
+            this.ClientSize = new System.Drawing.Size(1176, 703);
             this.ControlBox = false;
             this.Controls.Add(this.axPDFView1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -139,7 +129,6 @@ namespace MultiPdfWebSocket
         private System.Windows.Forms.ToolStripMenuItem 退出服务ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 隐藏插件ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 开始监听ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem 停止监听ToolStripMenuItem;
     }
 }
 

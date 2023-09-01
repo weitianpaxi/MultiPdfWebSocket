@@ -45,7 +45,11 @@ namespace MultiPdfWebSocket
         /// <summary>
         /// 消息体签章状态
         /// </summary>
-        private Boolean messageSignState = false;       
+        private Boolean messageSignState = false;
+        /// <summary>
+        /// 服务器监听状态
+        /// </summary>
+        private Boolean serverStatus = false;
         public Form1()
         {
             InitializeComponent();
@@ -102,7 +106,7 @@ namespace MultiPdfWebSocket
             listener = new HttpListener();
             listener.Prefixes.Add(ProfileConstant.LISTENER_URL);
             listener.Start();
-
+            serverStatus = true;
             LogHelper.Info("WebSocket server started.");
 
             while (true)
@@ -255,6 +259,11 @@ namespace MultiPdfWebSocket
                     responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.TZ_SIGN_BY_KEYWORD_3,
                         TZSignByKeyword3(json_resultMessage)));
                     selfSignState = true;    
+                }
+                if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.GET_REAL_SIGNATURE))
+                {
+                    responseMessage = JsonConvert.SerializeObject(new Response(InterfaceMethodConstant.GET_REAL_SIGNATURE,
+                        GetRealSignature()));
                 }
                 if (json_resultMessage[ProfileConstant.METHOD].ToString().Equals(InterfaceMethodConstant.GET_REAL_SIGNATURES))
                 {
@@ -642,6 +651,21 @@ namespace MultiPdfWebSocket
         }
 
         /// <summary>
+        /// 获取最后一个印章的详细信息（dll使用）
+        /// </summary>
+        /// <returns></returns>
+        private Result GetRealSignature()
+        {
+            if (IsOpenAFile())
+            {
+                // 这个获取必须是在有签章动作之后，如果直接打开一个有签章的文件直接调用这个接口是获取不到信息的。
+                return Result.Success(axPDFView1.GetRealSignature(null));
+            }
+            else
+                return Result.Error(MessageConstant.GET_SEAL_INFO_FAILED);
+        }
+
+        /// <summary>
         /// 获取印章的详细信息,用于无序签章
         /// </summary>
         /// <returns></returns>
@@ -827,20 +851,15 @@ namespace MultiPdfWebSocket
         /// <param name="e"></param>
         private void 开始监听ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            停止监听ToolStripMenuItem.Checked = false;
-            _ = Start();
+            if (serverStatus)
+            {
+                开始监听ToolStripMenuItem.Checked = true;
+                MessageBox.Show("MultiPdfWebSocket监听服务已经在运行！", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+                _ = Start();
         }
 
-        /// <summary>
-        /// 托盘菜单关闭监听请求消息
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void 停止监听ToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            开始监听ToolStripMenuItem.Checked = false;
-            listener.Close();
-        }
 
         /// <summary>
         /// 托盘菜单退出服务
